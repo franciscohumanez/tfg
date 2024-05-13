@@ -1,17 +1,14 @@
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
+import { OffCanvas } from '../../components/OffCanvas';
 
-export const Toolbar = () => {
+export const Toolbar = ({ userName }) => {
   return (
     <Navbar className="bg-body-tertiary">
       <Container>
-        <Navbar.Brand href="#home">Odoo</Navbar.Brand>
+        <OffCanvas/>
           <Navbar.Toggle />
-          <Navbar.Collapse className="justify-content-end">
-            <Navbar.Text>
-              <a href="#login">Mark Otto</a>
-            </Navbar.Text>
-          </Navbar.Collapse>
+          <Navbar.Brand href="#home">Odoo</Navbar.Brand>
       </Container>
     </Navbar>
   );

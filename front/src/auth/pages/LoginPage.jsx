@@ -2,6 +2,7 @@ import { Button, Grid, TextField } from "@mui/material"
 import { AuthLayout } from "../layout/AuthLayout"
 import { useEffect, useState } from "react"
 import axios from "axios"
+import Swal from 'sweetalert2'
 // import { useNavigate } from "react-router-dom"
 
 export const LoginPage = () => {
@@ -27,6 +28,14 @@ export const LoginPage = () => {
 
         } catch (error){
             console.log("Error al iniciar sesión:", error)
+            Swal.fire({
+                showConfirmButton: true,
+                icon: 'error',
+                text: 'Error al iniciar sesión. Intentelo más tarde.'
+            }).then(()=>{
+                // localStorage.removeItem('token');
+                window.location.reload(false)
+            })
         }
     };
 

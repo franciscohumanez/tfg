@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from "axios";
 import Projects from './Projects';
 import { Toolbar } from './Toolbar';
@@ -8,6 +8,7 @@ import Swal from 'sweetalert2'
 export const DashboardPage = () => {
 
   const navigate = useNavigate();
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -30,13 +31,18 @@ export const DashboardPage = () => {
             }
             return Promise.reject(error);
         });
+
+      
+
     }
 }, [navigate]);
 
   return (
-    <div className='container'>
-        <Toolbar />
-        <Projects />
+    <div className='container' style={{ width: '100%', display: 'flex', justifyContent: 'center', height: '100vh' }}>
+        <div style={{ width: '100%' }}>
+          <Toolbar userName={userName} />
+          <Projects />
+        </div>
     </div> 
   );
 };
