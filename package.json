@@ -1,5 +1,8 @@
 {
   "dependencies": {
-    "react-router-dom": "^6.23.1"
+    "axios": "^1.6.8",
+    "jwt-decode": "^4.0.0",
+    "react-router-dom": "^6.23.1",
+    "sqlite3": "^5.1.7"
   }
 }

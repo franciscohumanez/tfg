@@ -41,7 +41,7 @@ export const Projects = () => {
                   text: 'Error en el servidor.'
               }).then(()=>{
                   // localStorage.removeItem('token');
-                  window.location.reload(false)
+                //   window.location.reload(false)
               })
             }
         };
@@ -62,7 +62,6 @@ export const Projects = () => {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', height: '100vh' }}>
       <div>
-        <h1>Proyectos</h1>
         {proyectos.map(proyecto => (
           <Card style={{ width: '18rem', marginBottom: '20px', cursor: 'pointer' }} 
             key={proyecto.id}

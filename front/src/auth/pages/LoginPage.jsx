@@ -19,10 +19,10 @@ export const LoginPage = () => {
         // Envia los parametros en xml a la url de la api
         try {
             const response = await axios.post("http://localhost:3000/api/login", { database, email, password });
-            console.log(response)
+            
             const token = response.data.token;
            
-            localStorage.setItem('token', token);
+            localStorage.setItem('token', token);  
             window.location.reload();
             // navigate('/', { replace: true })
 
@@ -45,6 +45,7 @@ export const LoginPage = () => {
                 <Grid container>
                     <Grid item xs={ 12 } sx={{ mt: 2 }}>
                         <TextField 
+                            autoFocus
                             label="Correo" 
                             type="text" 
                             placeholder="correo@google.com"
