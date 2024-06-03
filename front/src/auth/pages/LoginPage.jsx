@@ -1,15 +1,17 @@
 import { Button, Grid, TextField } from "@mui/material"
 import { AuthLayout } from "../layout/AuthLayout"
 import { useEffect, useState } from "react"
+import { useNavigate } from 'react-router-dom';
 import axios from "axios"
 import Swal from 'sweetalert2'
+
 // import { useNavigate } from "react-router-dom"
 
 export const LoginPage = () => {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] =useState("");
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
 
     const database = 'odoo';
     
@@ -24,7 +26,7 @@ export const LoginPage = () => {
            
             localStorage.setItem('token', token);  
             window.location.reload();
-            // navigate('/', { replace: true })
+            //navigate('/');
 
         } catch (error){
             console.log("Error al iniciar sesión:", error)

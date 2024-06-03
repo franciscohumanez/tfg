@@ -1,24 +1,64 @@
 import React, { useState } from 'react'
 import { IoMenu, IoExit } from "react-icons/io5";
 import { Employee } from '../dashboard/page/Employee';
+import { useNavigate } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import Image from 'react-bootstrap/Image';
 import ListGroup from 'react-bootstrap/ListGroup';
+import axios from 'axios';
+import Swal from 'sweetalert2'
 
-export const OffCanvas = ({ name }) => {
+export const OffCanvas = ({ userPhoto }) => {
 
     const token = localStorage.getItem('token');
-
+    const navigate = useNavigate();
     const [show, setShow] = useState(false);
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
     const logOut = () => {
-        localStorage.removeItem('token');
-        window.location.reload(false)
-      };
+        // Mostramos el popup informativo
+        Swal.fire({
+            title: "¿Seguro que deseas salir?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Exit"
+          }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.removeItem('token');
+                window.location.reload(false)
+            }
+          });
+    };
+
+    const handleProjectsClick = () => {
+        navigate('/projects');
+        handleClose();
+    }
+
+    const handleMyProjectsClick = async () => {
+        navigate('/projectsEmployee');
+        handleClose();
+    };
+
+    const handleTasksClick = () => {
+        navigate('/tasks');
+        handleClose();
+    }
+
+    const handleMyTasksClick = async () => {
+        navigate('/tasksEmployee');
+        handleClose();
+    };
+
+    const handleEmployeeClick = () => {
+        navigate('/employee');
+        handleClose();
+    }
 
     return (
         <>
@@ -29,18 +69,18 @@ export const OffCanvas = ({ name }) => {
                 <Offcanvas.Header closeButton>
                     <Offcanvas.Title>
                         <div className='d-flex align-items-center'>
-                            <Image src="holder.js/171x180" className="mr-4" roundedCircle />
-                            
+                            <Image src={ userPhoto } rounded />                            
                         </div>
                     </Offcanvas.Title>   
                 </Offcanvas.Header>
                 <Offcanvas.Body className="d-flex flex-column">
 
                     <ListGroup variant="flush">
-                        <ListGroup.Item>Proyectos</ListGroup.Item>
-                        <ListGroup.Item>Tareas</ListGroup.Item>
-                        <ListGroup.Item>Morbi leo risus</ListGroup.Item>
-                        <ListGroup.Item>Porta ac consectetur ac</ListGroup.Item>
+                        <ListGroup.Item onClick={handleProjectsClick}>Proyectos</ListGroup.Item>
+                        <ListGroup.Item onClick={handleMyProjectsClick}>Mis proyectos</ListGroup.Item>
+                        <ListGroup.Item onClick={handleTasksClick}>Tareas</ListGroup.Item>
+                        <ListGroup.Item onClick={handleMyTasksClick}>Mis tareas</ListGroup.Item>
+                        <ListGroup.Item onClick={handleEmployeeClick}>Yo</ListGroup.Item>
                     </ListGroup>
                     <br/>
                     <Button variant="danger" onClick={logOut}>

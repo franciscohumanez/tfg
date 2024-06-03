@@ -1,49 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { addEmployee, getEmployees,  } from '../../indexedDB';
 import axios from 'axios';
+import Toolbar from './Toolbar';
+import { OffCanvas } from '../../components/OffCanvas';
 
 export const Employee = () => {
-  const [employee, setEmployee] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState('');
+  const [userPhoto, setUserPhoto] = useState('');
 
   useEffect(() => {
-    const fetchEmployee = async () => {
+    const fetchEmployeeName = async () => {
+      const token = localStorage.getItem('token');
+
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/employee', {
+        const response = await axios.get('http://localhost:3000/api/getEmployee', {
           headers: {
-            Authorization: `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           }
         });
-        
-        setEmployee(response.data);
-        console.log("Data: ",response.data)
-        response.data.forEach(async (employee) => {
-          await addEmployee(employee);
-        });
 
-        setLoading(false);
+        if (response.status === 200) {
+          const data = response.data;
+          setUserName(data.name); // Ajusta esto según la estructura de tu respuesta
+          setUserPhoto(data.avatar_1024)
+        } else {
+          console.error('Error al obtener la información del empleado:', response.data.error);
+        }
       } catch (error) {
-        const localEmployees = await getEmployees();
-        setEmployee(localEmployees);
-        setLoading(false);
-        console.log(error)
+        console.error('Error al obtener la información del empleado:', error);
       }
     };
 
-    fetchEmployee();
+    fetchEmployeeName();
   }, []);
 
-  if (loading) {
-    return <div>Cargando empleados...</div>;
-  }
-
-  if (!employee || employee.length === 0) {
-    return <div>No se encontró información de empleados</div>;
-  }
-
   return (
-    <span>{employee[0].name}</span>
+    <div>
+      {/* <Toolbar userName={userName} />
+      <OffCanvas userPhoto={userPhoto} /> */}
+      {/* Otros componentes de tu aplicación */}
+    </div>
   );
 };
 
