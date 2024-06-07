@@ -9,7 +9,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import axios from 'axios';
 import Swal from 'sweetalert2'
 
-export const OffCanvas = ({ userPhoto }) => {
+export const OffCanvas = ({ userName }) => {
 
     const token = localStorage.getItem('token');
     const navigate = useNavigate();
@@ -67,11 +67,7 @@ export const OffCanvas = ({ userPhoto }) => {
             </Button>
             <Offcanvas show={show} onHide={handleClose}>
                 <Offcanvas.Header closeButton>
-                    <Offcanvas.Title>
-                        <div className='d-flex align-items-center'>
-                            <Image src={ userPhoto } rounded />                            
-                        </div>
-                    </Offcanvas.Title>   
+                    <Offcanvas.Title>{userName}</Offcanvas.Title>   
                 </Offcanvas.Header>
                 <Offcanvas.Body className="d-flex flex-column">
 

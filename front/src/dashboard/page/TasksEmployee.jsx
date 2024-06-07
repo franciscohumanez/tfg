@@ -55,7 +55,7 @@ export const TasksEmployee = () => {
     }, [location.state]);
 
     const goBack = () => {
-        navigate(-1);
+        navigate('/');
     };
 
     return (

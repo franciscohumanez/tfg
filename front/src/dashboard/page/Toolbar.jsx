@@ -26,9 +26,6 @@ export const Toolbar = ({ userName }) => {
       <Container>
         <OffCanvas/>
           <Navbar.Toggle />
-          <Navbar.Brand href="#home">
-            <p style={{ fontSize: '0.8rem', margin: 0 }}>{userName}</p>
-          </Navbar.Brand>
           <FontAwesomeIcon
           icon={isOnline ? faWifi : faTimesCircle}
           color={isOnline ? 'green' : 'red'}

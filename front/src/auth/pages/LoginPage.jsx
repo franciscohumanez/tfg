@@ -1,9 +1,9 @@
-import { Button, Grid, TextField } from "@mui/material"
-import { AuthLayout } from "../layout/AuthLayout"
+import { Button, Grid, TextField, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useNavigate } from 'react-router-dom';
 import axios from "axios"
 import Swal from 'sweetalert2'
+import './StyleLogin.css';
 
 // import { useNavigate } from "react-router-dom"
 
@@ -42,10 +42,17 @@ export const LoginPage = () => {
     };
 
     return (
-        <AuthLayout title="Login">
-            <form onSubmit={handleSubmit} className='animate__animated animate__fadeIn animate__faster'>
-                <Grid container>
-                    <Grid item xs={ 12 } sx={{ mt: 2 }}>
+        <div className="auth-layout">
+            <div className="auth-header">
+                <img src="https://via.placeholder.com/150" alt="Logo" />
+                <Typography variant="h5" component="h5">
+                    Ingeniería e Instalaciones
+                </Typography>
+            </div>
+            
+            <form onSubmit={handleSubmit} className='auth-form animate__animated animate__fadeIn animate__faster'>
+                <Grid container spacing={2}>
+                    <Grid item xs={ 12 }>
                         <TextField 
                             autoFocus
                             label="Correo" 
@@ -54,9 +61,11 @@ export const LoginPage = () => {
                             fullWidth
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            className='MuiTextField-root'
+                            InputProps={{ className: 'MuiInputBase-root' }}
                         />
                     </Grid>
-                    <Grid item xs={ 12 } sx={{ mt: 2 }}>
+                    <Grid item xs={ 12 }>
                         <TextField 
                             label="Contraseña" 
                             type="password" 
@@ -64,22 +73,29 @@ export const LoginPage = () => {
                             fullWidth
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            className='MuiTextField-root'
+                            InputProps={{ className: 'MuiInputBase-root' }}
                         />
                     </Grid>
 
-                    <Grid container spacing={ 2 } sx={{ mb: 2, mt: 1 }}>
-                        <Grid item xs={ 12 }>
-                            <Button 
-                                // disabled={ isAuthenticating }
-                                type="submit" 
-                                variant="contained" 
-                                fullWidth>
-                                Login
-                            </Button>
-                        </Grid>
+                    <Grid item xs={ 12 }>
+                        <Button 
+                            // disabled={ isAuthenticating }
+                            type="submit" 
+                            variant="contained" 
+                            fullWidth
+                            className='MuiButton-root'>
+                            Iniciar Sesión
+                        </Button>
+                    </Grid>
+                    <Grid item xs={12} style={{ textAlign: 'center' }}>
+                        <Typography variant="body2" component="p">
+                            Si quieres eliminar tu cuenta, por favor acceda <a href="#">aquí</a>
+                        </Typography>
                     </Grid>
                 </Grid>
             </form>
-        </AuthLayout>
+        
+        </div>
     )
 }

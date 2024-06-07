@@ -34,7 +34,6 @@ export const ProjectEmployee = () => {
                 throw new Error('Error al obtener proyectos');
             }
             data = response.data;
-            
             setProyectos(data);
             setIsLoading(false);
         } catch (error) {
