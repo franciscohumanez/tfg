@@ -62,9 +62,8 @@ export const OffCanvas = ({ userName }) => {
 
     return (
         <>
-            <Button variant="primary" onClick={handleShow} className="me-2">
-                <IoMenu />
-            </Button>
+            <IoMenu onClick={handleShow} />
+            
             <Offcanvas show={show} onHide={handleClose}>
                 <Offcanvas.Header closeButton>
                     <Offcanvas.Title>{userName}</Offcanvas.Title>   

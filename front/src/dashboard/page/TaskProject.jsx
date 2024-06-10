@@ -153,7 +153,7 @@ export const TaskProject = () => {
             <div>
                 <div className="w-100 d-flex align-items-center mb3">
                     <Button variant="link" onClick={goBack} className="p0 me2 d-flex align-items-center">
-                        <ArrowLeftShort size={32} />
+                        <ArrowLeftShort size={32} style={{color: '#F8B944'}} />
                     </Button>
                     <h2 className="m0 text-center">Tareas</h2>
                 </div>
@@ -199,7 +199,7 @@ export const TaskProject = () => {
                                             Detener Tarea
                                         </Button>
                                     ) : (
-                                        <Button variant="primary" onClick={() => handleStartTask(task.id)}>
+                                        <Button style={{backgroundColor: '#F8B944', borderColor: '#F8B944'}} onClick={() => handleStartTask(task.id)}>
                                             Comenzar Tarea
                                         </Button>
                                     )}

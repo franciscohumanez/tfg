@@ -33,7 +33,6 @@ export const Employee = () => {
           }
 
           data = response.data;
-          console.log(data)
           setEmployees(data);
           setUserName(data.name);
           setIsLoading(false);
@@ -54,7 +53,7 @@ export const Employee = () => {
       const token = localStorage.getItem('token');
 
       try {
-        const response = await axios.get('http://localhost:3000/api/getTimeEntries', {
+        const response = await axios.get('http://localhost:3000/api/timesheets', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -108,7 +107,7 @@ export const Employee = () => {
       <div>
         <div className="w-100 d-flex align-items-center mb-3">
             <Button variant="link" onClick={goBack} className="p-0 me-2 d-flex align-items-center">
-                <ArrowLeftShort size={32} />
+                <ArrowLeftShort size={32} style={{color: '#F8B944'}} />
             </Button>
             <h2 className="m-0 text-center">Información del empleado</h2>
         </div>
@@ -127,7 +126,7 @@ export const Employee = () => {
         ) : (
             employees.map(employee => (
               <Card 
-                style={{ width: '18rem', marginBottom: '20px', cursor: 'pointer' }}
+                style={{ width: '18rem', marginBottom: '20px', cursor: 'pointer',  }}
                 key={employee.id}  
               >
                 <Card.Body style={{ padding: '10px' }}>

@@ -6,61 +6,96 @@ body, html {
 }
 
 .auth-layout {
-    display: flex;
+    width: 100%;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background-color: #f5a623; /* Color de fondo naranja */
-    padding: 0 20px;
+    background-color: #F8B944; /* Color de fondo naranja */
 }
 
 .auth-header {
+    width: 100%;
     text-align: center;
     margin-bottom: 20px;
-    color: white; /* Color del texto del título */
 }
 
-.auth-header img {
-    width: 150px;
-    margin-bottom: 10px;
+.auth-logo {
+    width: 100%;
+    height: auto;
 }
 
 .auth-form {
     width: 100%;
-    max-width: 400px;
+    padding: 0 20px;
+    padding-top: 70px;
     text-align: center;
+}
+
+.custom-textfield {
+    margin-bottom: 20px;
+}
+
+.custom-input {
+    border-radius: 45px !important;
+    background-color: transparent !important; /* Fondo transparente */
+    color: white !important; /* Color del texto */
+    border: none !important; /* Borde blanco */
+    
+}
+
+.custom-input:hover {
+    border-color: white !important; /* Mantiene el borde blanco al pasar el ratón */
+}
+
+.custom-input:focus {
+    border-color: white !important; /* Mantiene el borde blanco al enfocar */
+}
+
+.custom-input-label {
+    color: white !important; /* Color de la etiqueta */
+}
+
+.custom-button {
+    background-color: white;
+    color: #f5a623;
+    font-weight: bold;
+    margin-top: 20px;
+    border-radius: 45px;
+    height: 56px;
+}
+
+.custom-button:hover {
+    background-color: #d4881e !important; /* Color del botón de inicio de sesión al pasar el ratón */
 }
 
 .auth-form .MuiTextField-root {
     margin-bottom: 20px;
-    background-color: transparent;
-    border-radius: 2px;
 }
 
 .auth-form .MuiInputBase-root {
     border-radius: 45px;
+    background-color: transparent; /* Fondo transparente */
+    color: white; /* Color del texto */
+    border: 1px solid white; /* Borde blanco */
+}
+
+.auth-form .MuiInputBase-root.Mui-focused {
+    border-color: white; /* Mantiene el borde blanco al enfocar */
+}
+
+.auth-form .MuiInputLabel-root {
+    color: white; /* Color de la etiqueta */
 }
 
 .auth-form .MuiButton-root {
     background-color: white;
-    color: #f5a623;
+    color: #F8B944;
     font-weight: bold;
     margin-top: 20px;
     border-radius: 45px;
 }
 
 .auth-form .MuiButton-root:hover {
-    background-color: #d4881e; /* Color del botón de inicio de sesión al pasar el ratón */
-}
-
-.auth-form a {
-    color: white;
-    text-decoration: none;
-    margin-top: 20px;
-    display: inline-block;
-}
-
-.auth-form a:hover {
-    text-decoration: underline;
+    background-color: #F8B944; /* Color del botón de inicio de sesión al pasar el ratón */
 }

@@ -1,11 +1,11 @@
 import { Button, Grid, TextField, Typography } from "@mui/material"
+import { styled } from '@mui/material/styles'
 import { useEffect, useState } from "react"
 import { useNavigate } from 'react-router-dom';
 import axios from "axios"
 import Swal from 'sweetalert2'
 import './StyleLogin.css';
-
-// import { useNavigate } from "react-router-dom"
+import logo from '../img/logoLogin.png';
 
 export const LoginPage = () => {
 
@@ -44,10 +44,7 @@ export const LoginPage = () => {
     return (
         <div className="auth-layout">
             <div className="auth-header">
-                <img src="https://via.placeholder.com/150" alt="Logo" />
-                <Typography variant="h5" component="h5">
-                    Ingeniería e Instalaciones
-                </Typography>
+                <img src={logo} alt="Logo" className="auth-logo" />
             </div>
             
             <form onSubmit={handleSubmit} className='auth-form animate__animated animate__fadeIn animate__faster'>
@@ -61,8 +58,9 @@ export const LoginPage = () => {
                             fullWidth
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className='MuiTextField-root'
-                            InputProps={{ className: 'MuiInputBase-root' }}
+                            className='custom-textfield'
+                            InputLabelProps={{ className: 'custom-input-label' }}
+                            InputProps={{ className: 'custom-input' }}
                         />
                     </Grid>
                     <Grid item xs={ 12 }>
@@ -73,8 +71,9 @@ export const LoginPage = () => {
                             fullWidth
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className='MuiTextField-root'
-                            InputProps={{ className: 'MuiInputBase-root' }}
+                            className='custom-textfield'
+                            InputLabelProps={{ className: 'custom-input-label' }}
+                            InputProps={{ className: 'custom-input' }}
                         />
                     </Grid>
 
@@ -84,18 +83,12 @@ export const LoginPage = () => {
                             type="submit" 
                             variant="contained" 
                             fullWidth
-                            className='MuiButton-root'>
+                            className='custom-button'>
                             Iniciar Sesión
                         </Button>
                     </Grid>
-                    <Grid item xs={12} style={{ textAlign: 'center' }}>
-                        <Typography variant="body2" component="p">
-                            Si quieres eliminar tu cuenta, por favor acceda <a href="#">aquí</a>
-                        </Typography>
-                    </Grid>
                 </Grid>
             </form>
-        
         </div>
     )
 }

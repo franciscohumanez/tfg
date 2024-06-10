@@ -66,7 +66,7 @@ export const ProjectEmployee = () => {
             <div>
                 <div className="w-100 d-flex align-items-center mb-3">
                     <Button variant="link" onClick={goBack} className="p-0 me-2 d-flex align-items-center">
-                        <ArrowLeftShort size={32} />
+                        <ArrowLeftShort size={32} style={{color: '#F8B944'}} />
                     </Button>
                     <h2 className="m-0 text-center">Mis proyectos</h2>
                 </div>
