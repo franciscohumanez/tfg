@@ -13,7 +13,7 @@ export const TaskProject = () => {
     const [tasks, setTasks] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [description, setDescription] = useState('');
+    const [name, setName] = useState('');
     const [currentTaskId, setCurrentTaskId] = useState(localStorage.getItem('currentTaskId'));
     const [currentEntryId, setCurrentEntryId] = useState(localStorage.getItem('currentEntryId'));
     const [elapsedTime, setElapsedTime] = useState(null);
@@ -43,10 +43,7 @@ export const TaskProject = () => {
                     showConfirmButton: true,
                     icon: 'error',
                     text: 'Error en el servidor.'
-                }).then(() => {
-                    // localStorage.removeItem('token');
-                    // window.location.reload(false);
-                });
+                })
             }
         };
 
@@ -104,12 +101,16 @@ export const TaskProject = () => {
 
     const handleSubmit = async () => {
         const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+        const userName = localStorage.getItem('userName');
+        const taskName = name;
 
         try {
             const response = await axios.post('http://localhost:3000/api/startTask', {
                 task_id: currentTaskId,
-                user_id: localStorage.getItem('userId'), // Asegúrate de guardar userId en localStorage al iniciar sesión
-                description
+                task_name: taskName,
+                user_name: userName, // Asegúrate de guardar userId en localStorage al iniciar sesión
+                name
             }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -120,7 +121,7 @@ export const TaskProject = () => {
             if (response.status < 200 || response.status >= 300) {
                 throw new Error('Error al iniciar tarea');
             }
-
+            console.log(response.data)
             setCurrentEntryId(response.data.id);
             localStorage.setItem('currentTaskId', currentTaskId);
             localStorage.setItem('currentEntryId', response.data.id);
@@ -182,6 +183,7 @@ export const TaskProject = () => {
                         </div>
                     ) : (
                         tasks.map(task => (
+                            
                             <Card
                                 style={{ width: '18rem', marginBottom: '20px', cursor: 'pointer' }}
                                 className={getColorClass(task.stage_id)}
@@ -218,8 +220,8 @@ export const TaskProject = () => {
                             <Form.Control
                                 type="text"
                                 placeholder="Descripción"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                             />
                         </Form.Group>
                     </Modal.Body>

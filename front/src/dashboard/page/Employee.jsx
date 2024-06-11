@@ -63,7 +63,7 @@ export const Employee = () => {
         if (response.status < 200 || response.status >= 300) {
           throw new Error('Error al obtener las entradas de tiempo');
         }
-
+        console.log(response.data)
         setTimeEntries(response.data);
       } catch (error) {
         console.error('Error al obtener las entradas de tiempo:', error);
@@ -154,8 +154,8 @@ export const Employee = () => {
             {timeEntries.map(entry => (
               <tr key={entry.id} onClick={() => handleRowClick(entry)} style={{ cursor: 'pointer' }}>
                 <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>{entry.task_id}</td>
-                <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>{entry.description}</td>
-                <td>{formatElapsedTime(new Date(entry.end_time) - new Date(entry.start_time))}</td>
+                <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>{entry.name}</td>
+                <td>{entry.date_time_end ? formatElapsedTime(new Date(entry.date_time_end) - new Date(entry.date_time)) : 'Sin finalizar'}</td>
               </tr>
             ))}
           </tbody>
@@ -166,11 +166,12 @@ export const Employee = () => {
               <Modal.Title>Detalles</Modal.Title>
             </Modal.Header>
             <Modal.Body>
+              <p><strong>Proyecto:</strong> {selectedEntry.account_id}</p>
               <p><strong>Tarea:</strong> {selectedEntry.task_id}</p>
-              <p><strong>Descripción:</strong> {selectedEntry.description}</p>
-              <p><strong>Tiempo Transcurrido:</strong> {formatElapsedTime(new Date(selectedEntry.end_time) - new Date(selectedEntry.start_time))}</p>
-              <p><strong>Hora de Inicio:</strong> {new Date(selectedEntry.start_time).toLocaleString()}</p>
-              <p><strong>Hora de Fin:</strong> {new Date(selectedEntry.end_time).toLocaleString()}</p>
+              <p><strong>Descripción:</strong> {selectedEntry.name}</p>
+              <p><strong>Hora de Inicio:</strong> {selectedEntry.date_time}</p>
+              <p><strong>Hora de Fin:</strong> {selectedEntry.date_time_end}</p>
+              <p><strong>Usuario:</strong> {selectedEntry.user_id}</p>
             </Modal.Body>
             <Modal.Footer>
               <Button variant="secondary" onClick={handleCloseModal}>
