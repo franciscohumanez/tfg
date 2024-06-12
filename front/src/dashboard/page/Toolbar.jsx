@@ -3,7 +3,7 @@ import Container from 'react-bootstrap/Container';
 import { OffCanvas } from '../../components/OffCanvas';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWifi, faTimesCircle  } from '@fortawesome/free-solid-svg-icons';
-import './StyleToolbar.css';
+import '../../styles.css'
 
 export const Toolbar = ({ userName }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);

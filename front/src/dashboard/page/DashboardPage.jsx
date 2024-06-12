@@ -4,6 +4,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import axios from "axios";
 import Swal from 'sweetalert2'
 import jwtDecode from 'jwt-decode';
+import '../../styles.css'
 
 export const DashboardPage = () => {
 
@@ -44,7 +45,7 @@ export const DashboardPage = () => {
 }, [navigate]);
 
   return (
-    <div className='container' style={{ width: '100%', display: 'flex', justifyContent: 'center', height: '100vh' }}>
+    <div style={{ width: '100%', height: 'auto' }}>
       <div style={{ width: '100%' }}>
         <Toolbar userName={userName} />
         <br/>

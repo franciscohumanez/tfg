@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeftShort } from 'react-bootstrap-icons';
 import { Button } from 'react-bootstrap';
+import Accordion from 'react-bootstrap/Accordion';
 import axios from 'axios';
 import Card from 'react-bootstrap/Card';
 import Placeholder from 'react-bootstrap/Placeholder';
@@ -69,9 +70,9 @@ export const Projects = () => {
         <div>
             <div className="w-100 d-flex align-items-center mb-3">
                 <Button variant="link" onClick={goBack} className="p-0 me-2 d-flex align-items-center">
-                    <ArrowLeftShort size={32} style={{color: '#F8B944'}} />
+                    <ArrowLeftShort size={32} style={{color: '#ECB136'}} />
                 </Button>
-                <h2 className="m-0 text-center">Proyectos</h2>
+                <h2 className="pages-titles">Proyectos</h2>
             </div>
             {isLoading ? (
                 <Card style={{ width: '18rem', marginBottom: '20px' }}>
@@ -97,23 +98,25 @@ export const Projects = () => {
                         <p>No tienes proyectos disponibles</p>
                     </div>
                 ) :  (
-                proyectos.map(proyecto => (
-                        <Card
+                        <Accordion
+                            defaultActiveKey="0"
                             style={{ width: '18rem', marginBottom: '20px', cursor: 'pointer' }}
-                            key={proyecto.id}
-                            onClick={() => handleCardClick(proyecto.id)}
+                            
                         >
-                            <Card.Body style={{ padding: '10px' }}>
-                                <Card.Title>{proyecto.name}</Card.Title>
-                                <Card.Subtitle className="mb-2 text-muted">
-                                    <p>Descripción: {proyecto.description}</p>
-                                    <p>Fecha de inicio: {proyecto.date_start}</p>
-                                    <p>Fecha de finalización: {proyecto.date}</p>
-                                    <p>Tareas: {proyecto.task_count}</p>
-                                </Card.Subtitle>
-                            </Card.Body>
-                        </Card>
-                    ))
+                            {proyectos.map(proyecto => (
+                                <Accordion.Item key={proyecto.id} eventKey={proyecto.id}>
+                                    <Accordion.Header>
+                                        <span className='pages-titles'>{proyecto.name}</span>
+                                    </Accordion.Header>
+                                    <Accordion.Body style={{ padding: '10px' }}>
+                                        <p className='pages-titles'>Tareas asignadas: <span style={{fontWeight: 'normal', color: '#ECB136'}}>{proyecto.task_count}</span></p>
+                                        <p className='pages-titles'>Fecha de inicio: <span style={{fontWeight: 'normal'}}>{proyecto.date_start}</span></p>
+                                        <p className='pages-titles'>Fecha de finalización: <span style={{fontWeight: 'normal'}}>{proyecto.date}</span></p>
+                                        <p className='pages-titles'>Descripción: <span style={{fontWeight: 'normal'}}>{proyecto.description}</span></p>
+                                    </Accordion.Body>
+                                </Accordion.Item>
+                            ))}
+                        </Accordion>
                 )
             )}
         </div>

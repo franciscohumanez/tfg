@@ -12,20 +12,23 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Configura la conexión con el servidor xmlrpc
-const client = xmlrpc.createClient({ host: 'localhost', port: 8069, path: '/xmlrpc/2/common' });
+const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/common' });
 
 let userId
 
+
 // Función para verificar las credenciales del usuario utilizando xmlrpc
-const loginWithXmlrpc = (database, email, password) => {
+const loginWithXmlrpc = ( database, email, password) => {
   return new Promise((resolve, reject) => {
     const params = [ database, email, password, { user_agent_env: 'Node.js XML-RPC Client', context: {} } ];
-    
+    console.log(params)
     client.methodCall('authenticate', params, (error, userId) => {
+      console.log(error)
       if (error) {
         reject(error);
       } else {
         resolve(userId);
+        console.log(userId)
       }
     });
   });
@@ -38,7 +41,7 @@ const syncFromOdoo = async (token) => {
     return;
   }
 
-  const client = xmlrpc.createClient({ host: 'localhost', port: 8069, path: '/xmlrpc/2/object' });
+  const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
   const decodedToken = jwt.verify(token, 'secretkey');
 
   if (decodedToken) {
@@ -76,8 +79,8 @@ const saveTimeEntries2 = (entries) => {
 
 // Ruta para manejar las solicitudes de inicio de sesión
 app.post('/api/login', async (req, res) => {
-  const { database, email, password } = req.body;
-
+  let { database, email, password } = req.body;
+  database = "odoo16_sdv"
   try {
     // Verifica las credenciales utilizando xmlrpc
    const integerValue = await loginWithXmlrpc(database, email, password);
@@ -233,7 +236,7 @@ app.get('/api/getEmployee', async (req, res) => {
 
     // Si el token es válido, realiza la llamada a la API XML-RPC de Odoo para obtener la información del empleado
     if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'localhost', port: 8069, path: '/xmlrpc/2/object' });
+      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
 
       // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener el empleado
       const params = [
@@ -286,7 +289,7 @@ app.get('/api/proyectos', async (req, res) => {
     
     // Si el token es válido, realiza la llamada a la API XML-RPC de Odoo para obtener los proyectos
     if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'localhost', port: 8069, path: '/xmlrpc/2/object' });
+      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
 
       // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener los proyectos
       const params = [
@@ -336,7 +339,7 @@ app.get('/api/userProjects', async (req, res) => {
 
     // Si el token es válido, realiza la llamada a la API XML-RPC de Odoo para obtener los proyectos asignados al usuario
     if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'localhost', port: 8069, path: '/xmlrpc/2/object' });
+      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
 
       // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener los proyectos asignados al usuario
       const params = [
@@ -389,7 +392,7 @@ app.get('/api/taskProject', async (req, res) => {
 
     // Si el token es válido, realiza la llamada a la API XML-RPC de Odoo para obtener las tareas de cada proyecto
     if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'localhost', port: 8069, path: '/xmlrpc/2/object' });
+      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
 
       // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener las tareas de cada proyecto
       const params = [
@@ -440,7 +443,7 @@ app.get('/api/userTasks', async (req, res) => {
 
     // Si el token es válido, realiza la llamada a la API XML-RPC de Odoo para obtener las tareas de cada proyecto
     if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'localhost', port: 8069, path: '/xmlrpc/2/object' });
+      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
 
       // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener las tareas de cada proyecto
       const params = [
@@ -493,7 +496,7 @@ app.get('/api/taskProject/:projectId', async (req, res) => {
 
     // Si el token es válido, realiza la llamada a la API XML-RPC de Odoo para obtener las tareas de cada proyecto
     if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'localhost', port: 8069, path: '/xmlrpc/2/object' });
+      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
 
       // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener las tareas de cada proyecto
       const params = [
@@ -541,7 +544,7 @@ app.get('/api/timesheets', async (req, res) => {
     const decodedToken = jwt.verify(token, 'secretkey');
 
     if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'localhost', port: 8069, path: '/xmlrpc/2/object' });
+      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
 
       // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener los timesheets
       const params = [
@@ -672,7 +675,7 @@ const syncToOdoo = () => {
       return console.error('Error al obtener datos de la base de datos local:', err);
     }
 
-    const client = xmlrpc.createClient({ host: 'localhost', port: 8069, path: '/xmlrpc/2/object' });
+    const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, 'secretkey');
 

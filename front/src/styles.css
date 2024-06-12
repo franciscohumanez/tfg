@@ -1,0 +1,151 @@
+/* styles.css */
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+.auth-layout {
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #ECB136; /* Color de fondo naranja */
+}
+
+.auth-header {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.auth-logo {
+    width: 100%;
+    height: auto;
+}
+
+.auth-form {
+    width: 100%;
+    padding: 0 20px;
+    padding-top: 70px;
+    text-align: center;
+}
+
+.auth-label {
+    color: white;
+    text-align: left !important;
+    display: block;
+}
+
+.auth-textfield {
+    border-radius: 45px !important;
+    background-color: transparent !important; /* Fondo transparente */
+    color: white !important; /* Color del texto */
+    border: 1px solid white !important; /* Borde blanco */
+}
+
+.auth-placeholder::placeholder {
+    color: white !important; /* Cambia a blanco el color del placeholder */
+}
+
+.auth-button {
+    background-color: white !important;
+    color: #ECB136 !important;
+    border-color: white !important;
+    font-weight: bold !important;
+    margin-top: 20px !important;
+    border-radius: 45px !important;
+    height: 38px !important;
+    width: 100%;
+}
+
+.auth-button:hover {
+    background-color: #ECB136 !important; /* Color del botón de inicio de sesión al pasar el ratón */
+}
+
+.auth-form .MuiTextField-root {
+    margin-bottom: 20px;
+}
+
+.auth-form .MuiInputBase-root {
+    border-radius: 45px;
+    background-color: transparent; /* Fondo transparente */
+    color: white; /* Color del texto */
+    border: 1px solid white; /* Borde blanco */
+}
+
+.auth-form .MuiInputBase-root.Mui-focused {
+    border-color: white; /* Mantiene el borde blanco al enfocar */
+}
+
+.auth-form .MuiInputLabel-root {
+    color: white; /* Color de la etiqueta */
+}
+
+.auth-form .MuiButton-root {
+    background-color: white;
+    color: #ECB136;
+    font-weight: bold;
+    margin-top: 20px;
+    border-radius: 45px;
+}
+
+.auth-form .MuiButton-root:hover {
+    background-color: #ECB136; /* Color del botón de inicio de sesión al pasar el ratón */
+}
+
+.toolbar-header {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    padding: 0;
+}
+
+.toolbar-background {
+    background-image: url('../src/dashboard/img/logo.png');
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    height: 25vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin: 0;
+    padding: 0;
+}
+
+.toolbar-content {
+    width: 100%;
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    position: absolute;
+    top: 0;
+}
+
+.toolbar-content svg {
+    color: white;
+    font-size: 20px;
+}
+
+.pages-titles {
+    text-align: left;
+    display: block;
+    color: #AEAEAE !important;
+    font-weight: bold;
+}
+
+.task-button {
+    background-color: #ECB136 !important;
+    color: white !important;
+    border-color: #ECB136 !important;
+    margin-top: 20px !important;
+    border-radius: 45px !important;
+    height: 38px !important;
+    width: 100%;
+}

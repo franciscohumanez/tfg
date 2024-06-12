@@ -16,7 +16,7 @@ export const TaskProject = () => {
     const [name, setName] = useState('');
     const [currentTaskId, setCurrentTaskId] = useState(localStorage.getItem('currentTaskId'));
     const [currentEntryId, setCurrentEntryId] = useState(localStorage.getItem('currentEntryId'));
-    const [elapsedTime, setElapsedTime] = useState(null);
+
 
     useEffect(() => {
         const obtenerTareas = async () => {
