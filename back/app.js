@@ -7,8 +7,9 @@ const cors = require('cors');
 const PORT = process.env.PORT || 3000;
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('odoo.db');
+const axios = require('axios');
 
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
 app.use(cors());
 
 // Configura la conexión con el servidor xmlrpc
@@ -16,22 +17,32 @@ const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', 
 
 let userId
 
+app.use(express.json());
 
-// Función para verificar las credenciales del usuario utilizando xmlrpc
-const loginWithXmlrpc = ( database, email, password) => {
-  return new Promise((resolve, reject) => {
-    const params = [ database, email, password, { user_agent_env: 'Node.js XML-RPC Client', context: {} } ];
-    console.log(params)
-    client.methodCall('authenticate', params, (error, userId) => {
-      console.log(error)
-      if (error) {
-        reject(error);
-      } else {
-        resolve(userId);
-        console.log(userId)
+const ODOO_URL = 'https://sdvfran.smallsolutions.es/jsonrpc';
+const ODOO_DB = 'odoo16_sdv';
+
+const loginWithJsonRpc = async (database, email, password) => {
+  const loginData = {
+      jsonrpc: "2.0",
+      method: "call",
+      params: {
+          service: "common",
+          method: "authenticate",
+          args: [database, email, password, {}]
       }
-    });
-  });
+  };
+
+  try {
+      const response = await axios.post(ODOO_URL, loginData);
+      if (response.data.result) {
+          return response.data.result;
+      } else {
+          throw new Error(response.data.error.data.message);
+      }
+  } catch (error) {
+      throw error;
+  }
 };
 
 // Sincronización con Odoo
@@ -79,87 +90,153 @@ const saveTimeEntries2 = (entries) => {
 
 // Ruta para manejar las solicitudes de inicio de sesión
 app.post('/api/login', async (req, res) => {
-  let { database, email, password } = req.body;
-  database = "odoo16_sdv"
-  try {
-    // Verifica las credenciales utilizando xmlrpc
-   const integerValue = await loginWithXmlrpc(database, email, password);
+  const { email, password } = req.body;
 
-    if (integerValue > 0) {
-        // Usuario correcto, genera el token JWT y responde al cliente
-        const token = jwt.sign({ email, database, password, userId: integerValue }, 'secretkey', { expiresIn: '24h' });
-        res.json({ token });
-        syncFromOdoo(token);
-    } else {
-        // Credenciales incorrectas, devuelve un error
-        res.status(401).json({ error: 'Credenciales incorrectas' });
-    }
+  try {
+      // Verifica las credenciales utilizando JSON-RPC
+      const userId = await loginWithJsonRpc(ODOO_DB, email, password);
+
+      if (userId) {
+          // Usuario correcto, genera el token JWT y responde al cliente
+          const token = jwt.sign({ email, database: ODOO_DB, password, userId }, 'secretkey', { expiresIn: '24h' });
+          res.json({ token });
+          syncFromOdoo(token);
+      } else {
+          // Credenciales incorrectas, devuelve un error
+          res.status(401).json({ error: 'Credenciales incorrectas' });
+      }
   } catch (error) {
-    // Error al comunicarse con el servidor xmlrpc
-    console.error('Error en la comunicación xmlrpc:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+      // Error al comunicarse con el servidor JSON-RPC
+      console.error('Error en la comunicación JSON-RPC:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
 // Guardar datos en SQLite
 const saveProjects = (projects) => {
-  const stmt = db.prepare("INSERT OR REPLACE INTO projects (id, name, description, date_start, date, task_count, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+  // Borrar todos los registros existentes en la tabla projects
+  db.run("DELETE FROM projects", (err) => {
+    if (err) {
+      console.error("Error deleting records:", err.message);
+      return;
+    }
 
-  projects.forEach(project => {
-    stmt.run(project.id, project.name, project.description, project.date_start, project.date, project.task_count);
+    // Preparar la instrucción para insertar o reemplazar registros
+    const stmt = db.prepare("INSERT OR REPLACE INTO projects (id, name, description, date_start, date, task_count, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+
+    // Insertar cada proyecto
+    projects.forEach(project => {
+      stmt.run(project.id, project.name, project.description, project.date_start, project.date, project.task_count, project.user_id);
+    });
+
+    // Finalizar la instrucción
+    stmt.finalize();
   });
-
-  stmt.finalize();
-};  
+};
 
 const saveEmployeeProjects = (projects) => {
-  const stmt = db.prepare("INSERT OR REPLACE INTO employeeProjects (id, name, description, date_start, date, task_count) VALUES (?, ?, ?, ?, ?, ?)");
+  // Borrar todos los registros existentes en la tabla projects
+  db.run("DELETE FROM employeeProjects", (err) => {
+    if (err) {
+      console.error("Error deleting records:", err.message);
+      return;
+    }
 
-  projects.forEach(project => {
-    stmt.run(project.id, project.name, project.description, project.date_start, project.date, project.task_count);
+    // Preparar la instrucción para insertar o reemplazar registros
+    const stmt = db.prepare("INSERT OR REPLACE INTO employeeProjects (id, name, description, date_start, date, task_count) VALUES (?, ?, ?, ?, ?, ?)");
+
+    // Insertar cada proyecto
+    projects.forEach(project => {
+      stmt.run(project.id, project.name, project.description, project.date_start, project.date, project.task_count);
+    });
+
+    // Finalizar la instrucción
+    stmt.finalize();
   });
-
-  stmt.finalize();
 };  
 
 const saveTasks = (tasks) => {
-  const stmt = db.prepare("INSERT OR REPLACE INTO tasks (id, name, project_id, user_ids, date_deadline, stage_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+  // Borrar todos los registros existentes en la tabla projects
+  db.run("DELETE FROM tasks", (err) => {
+    if (err) {
+      console.error("Error deleting records:", err.message);
+      return;
+    }
 
-  tasks.forEach(task => {
-    stmt.run(task.id, task.name, task.project_id[0], JSON.stringify(task.user_ids), task.date_deadline, task.stage_id[0]);
+    // Preparar la instrucción para insertar o reemplazar registros
+    const stmt = db.prepare("INSERT OR REPLACE INTO tasks (id, name, project_id, user_ids, date_deadline, stage_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+
+    // Insertar cada proyecto
+    tasks.forEach(task => {
+      stmt.run(task.id, task.name, task.project_id[0], JSON.stringify(task.user_ids), task.date_deadline, task.stage_id[0]);
+    });
+
+    // Finalizar la instrucción
+    stmt.finalize();
   });
-
-  stmt.finalize();
 };
 
 const saveEmployeeTasks = (tasks) => {
-  const stmt = db.prepare("INSERT OR REPLACE INTO employeeTasks (id, name, project_id, user_ids, date_deadline, stage_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+  // Borrar todos los registros existentes en la tabla projects
+  db.run("DELETE FROM employeeTasks", (err) => {
+    if (err) {
+      console.error("Error deleting records:", err.message);
+      return;
+    }
 
-  tasks.forEach(task => {
-    stmt.run(task.id, task.name, task.project_id[0], JSON.stringify(task.user_ids), task.date_deadline, task.stage_id[0]);
+    // Preparar la instrucción para insertar o reemplazar registros
+    const stmt = db.prepare("INSERT OR REPLACE INTO employeeTasks (id, name, project_id, user_ids, date_deadline, stage_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+
+    // Insertar cada proyecto
+    tasks.forEach(task => {
+      stmt.run(task.id, task.name, task.project_id[0], JSON.stringify(task.user_ids), task.date_deadline, task.stage_id[0]);
+    });
+
+    // Finalizar la instrucción
+    stmt.finalize();
   });
-
-  stmt.finalize();
 };
 
 const saveEmployee = (employee) => {
-  const stmt = db.prepare("INSERT OR REPLACE INTO employee (name, id, job_id, department_id, work_email, avatar_1024) VALUES (?, ?, ?, ?, ?, ?)");
+  // Borrar todos los registros existentes en la tabla projects
+  db.run("DELETE FROM employee", (err) => {
+    if (err) {
+      console.error("Error deleting records:", err.message);
+      return;
+    }
 
-  employee.forEach(employee => {
-    stmt.run(employee.name, employee.id, employee.job_id[1], employee.department_id[1], employee.work_email, employee.avatar_1024);
+    // Preparar la instrucción para insertar o reemplazar registros
+    const stmt = db.prepare("INSERT OR REPLACE INTO employee (name, id, job_id, department_id, work_email, avatar_1024) VALUES (?, ?, ?, ?, ?, ?)");
+
+    // Insertar cada proyecto
+    employee.forEach(employee => {
+      stmt.run(employee.name, employee.id, employee.job_id[1], employee.department_id[1], employee.work_email, employee.avatar_1024);
+    });
+
+    // Finalizar la instrucción
+    stmt.finalize();
   });
-
-  stmt.finalize();
 };
 
 const saveTimeEntries = (timeEntries) => {
-  const stmt = db.prepare("INSERT OR REPLACE INTO time_entries (id, task_id, user_id, date_time, date_time_end, name) VALUES (?, ?, ?, ?, ?, ?)");
+  // Borrar todos los registros existentes en la tabla projects
+  db.run("DELETE FROM time_entries", (err) => {
+    if (err) {
+      console.error("Error deleting records:", err.message);
+      return;
+    }
 
-  timeEntries.forEach(timeEntries => {
-    stmt.run(timeEntries.id, timeEntries.task_id, timeEntries.user_id[0], timeEntries.date_time, timeEntries.date_time_end, timeEntries.name);
+    // Preparar la instrucción para insertar o reemplazar registros
+    const stmt = db.prepare("INSERT OR REPLACE INTO time_entries (id, task_id, user_id, date_time, date_time_end, name) VALUES (?, ?, ?, ?, ?, ?)");
+
+    // Insertar cada proyecto
+    timeEntries.forEach(timeEntries => {
+      stmt.run(timeEntries.id, timeEntries.task_id, timeEntries.user_id[0], timeEntries.date_time, timeEntries.date_time_end, timeEntries.name);
+    });
+
+    // Finalizar la instrucción
+    stmt.finalize();
   });
-
-  stmt.finalize();
 };
 
 // Leer datos desde SQLite
@@ -227,106 +304,120 @@ const getTimeEntries = (callback) => {
   });
 };
 
-// Ruta para obtener la información del empleado asociado al usuario autenticado
 app.get('/api/getEmployee', async (req, res) => {
   try {
-    // Verifica si el usuario está autenticado mediante el token JWT
-    const token = req.headers.authorization.split(' ')[1]; // Obtén el token del encabezado Authorization
-    const decodedToken = jwt.verify(token, 'secretkey');
+      // Verifica si el usuario está autenticado mediante el token JWT
+      const token = req.headers.authorization.split(' ')[1]; // Obtén el token del encabezado Authorization
+      const decodedToken = jwt.verify(token, 'secretkey');
 
-    // Si el token es válido, realiza la llamada a la API XML-RPC de Odoo para obtener la información del empleado
-    if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
+      // Si el token es válido, realiza la llamada a la API JSON-RPC de Odoo para obtener la información del empleado
+      if (decodedToken) {
+          const requestData = {
+              jsonrpc: "2.0",
+              method: "call",
+              params: {
+                  service: "object",
+                  method: "execute_kw",
+                  args: [
+                      decodedToken.database, // Nombre de la base de datos
+                      decodedToken.userId,   // ID del usuario
+                      decodedToken.password, // Contraseña del usuario
+                      'hr.employee',         // Nombre del modelo de Odoo que contiene los empleados
+                      'search_read',         // Método de la API de Odoo para buscar y leer registros
+                      [
+                          [['user_id', '=', decodedToken.userId]]
+                      ], // Condición para buscar el empleado por el userId
+                      { fields: ['name', 'id', 'job_id', 'department_id', 'work_email', 'avatar_1024'] } // Campos a devolver para cada empleado
+                  ]
+              }
+          };
 
-      // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener el empleado
-      const params = [
-        decodedToken.database, // Nombre de la base de datos
-        decodedToken.userId, // ID del usuario
-        decodedToken.password, // Contraseña del usuario
-        'hr.employee', // Nombre del modelo de Odoo que contiene los empleados
-        'search_read', // Método de la API de Odoo para buscar y leer registros
-        [
-          [['user_id', '=', decodedToken.userId]]
-        ], // Condición para buscar el empleado por el userId
-        { fields: ['name', 'id', 'job_id', 'department_id', 'work_email', 'avatar_1024'] } // Campos a devolver para cada empleado
-      ];
-      
-      // Realiza la llamada al método XML-RPC de Odoo
-      client.methodCall('execute_kw', params, (error, value) => { 
-        
-        if (error) {
-          getEmployee((err, employee) => {
-            if (err) {
-              res.status(500).json({ error: 'Error interno del servidor' });
-            } else {
-              res.json(employee);  // Devolver proyectos locales
-            }
-          })
-        } else {
-          // Devuelve los proyectos obtenidos de Odoo
-          res.json(value);
-          saveEmployee(value);
-        }
-      });
-    } else {
-      // Si el token no es válido, devuelve un error de autenticación
-      res.status(401).json({ error: 'Token JWT inválido' });
-    }
+          // Realiza la llamada al método JSON-RPC de Odoo
+          const response = await axios.post(ODOO_URL, requestData);
+          const { result, error } = response.data;
+
+          if (error) {
+              // Manejo de error al obtener empleado de Odoo
+              console.error('Error al obtener empleado de Odoo:', error);
+              getEmployee((err, employee) => {
+                  if (err) {
+                      res.status(500).json({ error: 'Error interno del servidor' });
+                  } else {
+                      res.json(employee); // Devolver empleado local
+                  }
+              });
+          } else {
+              // Devuelve la información del empleado obtenida de Odoo
+              res.json(result);
+              saveEmployee(result);
+          }
+      } else {
+          // Si el token no es válido, devuelve un error de autenticación
+          res.status(401).json({ error: 'Token JWT inválido' });
+      }
   } catch (error) {
-    // Error al decodificar el token JWT
-    console.error('Error al decodificar el token JWT:', error);
-    res.status(401).json({ error: 'Token JWT inválido' });
+      // Error al decodificar el token JWT
+      console.error('Error al decodificar el token JWT:', error);
+      res.status(401).json({ error: 'Token JWT inválido' });
   }
 });
 
 
-// Ruta para obtener todos los proyectos de Odoo
+// Ruta para obtener los proyectos de odoo
 app.get('/api/proyectos', async (req, res) => {
   try {
-    // Verifica si el usuario está autenticado mediante el token JWT
-    const token = req.headers.authorization.split(' ')[1]; // Obtén el token del encabezado Authorization
-    const decodedToken = jwt.verify(token, 'secretkey');
-    
-    // Si el token es válido, realiza la llamada a la API XML-RPC de Odoo para obtener los proyectos
-    if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
-
-      // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener los proyectos
-      const params = [
-        decodedToken.database, // Reemplaza 'nombre_de_la_base_de_datos' por el nombre real de tu base de datos en Odoo
-        decodedToken.userId, // ID del usuario (puede ser obtenido de la respuesta de exp_login)
-        decodedToken.password, // Contraseña del usuario
-        'project.project', // Nombre del modelo de Odoo que contiene los proyectos
-        'search_read', // Método de la API de Odoo para buscar y leer registros
-        [], // Lista de condiciones de búsqueda (vacia para obtener todos los registros)
-        { fields: ['name', 'description', 'date_start', 'date', 'task_count', 'user_id'] } // Campos a devolver para cada proyecto
-      ];
+      // Verifica si el usuario está autenticado mediante el token JWT
+      const token = req.headers.authorization.split(' ')[1]; // Obtén el token del encabezado Authorization
+      const decodedToken = jwt.verify(token, 'secretkey');
       
-      // Realiza la llamada al método XML-RPC de Odoo
-      client.methodCall('execute_kw', params, (error, value) => {
-        
-        if (error) {
-          getLocalProjects((err, projects) => {
-            if (err) {
-              res.status(500).json({ error: 'Error interno del servidor' });
-            } else {
-              res.json(projects);  // Devolver proyectos locales
-            }
-          })
-        } else {
-          // Devuelve los proyectos obtenidos de Odoo
-          res.json(value);
-          saveProjects(value);
-        }
-      });
-    } else {
-      // Si el token no es válido, devuelve un error de autenticación
-      res.status(401).json({ error: 'Token JWT inválido' });
-    }
+      // Si el token es válido, realiza la llamada a la API JSON-RPC de Odoo para obtener los proyectos
+      if (decodedToken) {
+          const requestData = {
+              jsonrpc: "2.0",
+              method: "call",
+              params: {
+                  service: "object",
+                  method: "execute_kw",
+                  args: [
+                      decodedToken.database,  // Nombre de la base de datos
+                      decodedToken.userId,    // ID del usuario
+                      decodedToken.password,  // Contraseña del usuario
+                      'project.project',      // Nombre del modelo de Odoo que contiene los proyectos
+                      'search_read',          // Método de la API de Odoo para buscar y leer registros
+                      [],                     // Lista de condiciones de búsqueda (vacía para obtener todos los registros)
+                      { fields: ['name', 'description', 'date_start', 'date', 'task_count', 'user_id'] } // Campos a devolver para cada proyecto
+                  ]
+              }
+          };
+
+          // Realiza la llamada al método JSON-RPC de Odoo
+          const response = await axios.post(ODOO_URL, requestData);
+          console.log(response.data)
+          const { result, error } = response.data;
+
+          if (error) {
+              // Manejo de error al obtener proyectos de Odoo
+              console.error('Error al obtener proyectos de Odoo:', error);
+              getLocalProjects((err, projects) => {
+                  if (err) {
+                      res.status(500).json({ error: 'Error interno del servidor' });
+                  } else {
+                      res.json(projects);  // Devolver proyectos locales
+                  }
+              });
+          } else {
+              // Devuelve los proyectos obtenidos de Odoo
+              res.json(result);
+              saveProjects(result);
+          }
+      } else {
+          // Si el token no es válido, devuelve un error de autenticación
+          res.status(401).json({ error: 'Token JWT inválido' });
+      }
   } catch (error) {
-    // Error al decodificar el token JWT
-    console.error('Error al decodificar el token JWT:', error);
-    res.status(401).json({ error: 'Token JWT inválido' });
+      // Error al decodificar el token JWT
+      console.error('Error al decodificar el token JWT:', error);
+      res.status(401).json({ error: 'Token JWT inválido' });
   }
 });
 
@@ -337,40 +428,48 @@ app.get('/api/userProjects', async (req, res) => {
     const token = req.headers.authorization.split(' ')[1]; // Obtén el token del encabezado Authorization
     const decodedToken = jwt.verify(token, 'secretkey');
 
-    // Si el token es válido, realiza la llamada a la API XML-RPC de Odoo para obtener los proyectos asignados al usuario
+    // Si el token es válido, realiza la llamada a la API JSON-RPC de Odoo para obtener los proyectos
     if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
-
-      // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener los proyectos asignados al usuario
-      const params = [
-        decodedToken.database, // Nombre de la base de datos
-        decodedToken.userId, // ID del usuario
-        decodedToken.password, // Contraseña del usuario
-        'project.project', // Nombre del modelo de Odoo que contiene los proyectos
-        'search_read', // Método de la API de Odoo para buscar y leer registros
-        [
-          [['user_id', '=', decodedToken.userId]], // Condición para buscar los proyectos por el userId
-        ],
-        { fields: ['name', 'description', 'date_start', 'date', 'task_count'] } // Campos a devolver para cada proyecto
-      ];
-
-
-      // Realiza la llamada al método XML-RPC de Odoo
-      client.methodCall('execute_kw', params, (error, value) => {
-        if (error) {
-          getLocalEmployeeProjects((err, projects) => {
-            if (err) {
-              res.status(500).json({ error: 'Error interno del servidor' });
-            } else {
-              res.json(projects); // Devolver proyectos locales
-            }
-          });
-        } else {
-          // Devuelve los proyectos obtenidos de Odoo
-          res.json(value);
-          saveEmployeeProjects(value);
+      const requestData = {
+        jsonrpc: "2.0",
+        method: "call",
+        params: {
+          service: "object",
+          method: "execute_kw",
+          args: [
+            decodedToken.database,  // Nombre de la base de datos
+            decodedToken.userId,    // ID del usuario
+            decodedToken.password,  // Contraseña del usuario
+            'project.project',      // Nombre del modelo de Odoo que contiene los proyectos
+            'search_read',          // Método de la API de Odoo para buscar y leer registros
+            [
+              [['user_id', '=', decodedToken.userId]],
+            ],                     // Lista de condiciones de búsqueda (vacía para obtener todos los registros)
+            { fields: ['name', 'description', 'date_start', 'date', 'task_count'] } // Campos a devolver para cada proyecto
+          ]
         }
-      });
+      };
+
+      // Realiza la llamada al método JSON-RPC de Odoo
+      const response = await axios.post(ODOO_URL, requestData);
+      console.log(response.data)
+      const { result, error } = response.data;
+      console.log(result)
+      if (error) {
+        // Manejo de error al obtener proyectos de Odoo
+        console.error('Error al obtener proyectos de Odoo:', error);
+        getLocalEmployeeProjects((err, projects) => {
+          if (err) {
+            res.status(500).json({ error: 'Error interno del servidor' });
+          } else {
+            res.json(projects);  // Devolver proyectos locales
+          }
+        });
+      } else {
+        // Devuelve los proyectos obtenidos de Odoo
+        res.json(result);
+        saveEmployeeProjects(result);
+      }
     } else {
       // Si el token no es válido, devuelve un error de autenticación
       res.status(401).json({ error: 'Token JWT inválido' });
@@ -384,106 +483,120 @@ app.get('/api/userProjects', async (req, res) => {
 
 // Ruta para obtener todas las tareas
 app.get('/api/taskProject', async (req, res) => {
-  
   try {
     // Verifica si el usuario está autenticado mediante el token JWT
     const token = req.headers.authorization.split(' ')[1]; // Obtén el token del encabezado Authorization
     const decodedToken = jwt.verify(token, 'secretkey');
-
-    // Si el token es válido, realiza la llamada a la API XML-RPC de Odoo para obtener las tareas de cada proyecto
+    
+    // Si el token es válido, realiza la llamada a la API JSON-RPC de Odoo para obtener los proyectos
     if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
-
-      // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener las tareas de cada proyecto
-      const params = [
-        decodedToken.database, // Nombre de la base de datos
-        decodedToken.userId, // ID del usuario
-        decodedToken.password, // Contraseña del usuario
-        'project.task', // Nombre del modelo de Odoo que contiene las tareas
-        'search_read', // Método de la API de Odoo para buscar y leer registros
-        [], // Lista de condiciones de búsqueda (vacía para obtener todos los registros)
-        { fields: ['name', 'project_id', 'user_ids', 'date_deadline', 'stage_id'] } // Campos a devolver para cada tarea
-      ];
-
-      // Realiza la llamada al método XML-RPC de Odoo
-      client.methodCall('execute_kw', params, (error, value) => {
-        
-        if (error) {
-          getLocalTasks((err, tasks) => {
-            if (err) {
-              res.status(500).json({ error: 'Error interno del servidor' });
-            } else {
-              res.json(tasks);  // Devolver tareas locales
+        const requestData = {
+            jsonrpc: "2.0",
+            method: "call",
+            params: {
+                service: "object",
+                method: "execute_kw",
+                args: [
+                    decodedToken.database,  // Nombre de la base de datos
+                    decodedToken.userId,    // ID del usuario
+                    decodedToken.password,  // Contraseña del usuario
+                    'project.task',      // Nombre del modelo de Odoo que contiene los proyectos
+                    'search_read',          // Método de la API de Odoo para buscar y leer registros
+                    [],                     // Lista de condiciones de búsqueda (vacía para obtener todos los registros)
+                    { fields: ['name', 'project_id', 'user_ids', 'date_deadline', 'stage_id'] } // Campos a devolver para cada proyecto
+                ]
             }
-          });
+        };
+
+        // Realiza la llamada al método JSON-RPC de Odoo
+        const response = await axios.post(ODOO_URL, requestData);
+        console.log(response.data)
+        const { result, error } = response.data;
+
+        if (error) {
+            // Manejo de error al obtener proyectos de Odoo
+            console.error('Error al obtener proyectos de Odoo:', error);
+            getLocalProjects((err, projects) => {
+                if (err) {
+                    res.status(500).json({ error: 'Error interno del servidor' });
+                } else {
+                    res.json(projects);  // Devolver proyectos locales
+                }
+            });
         } else {
-          // Devuelve las tareas obtenidas de Odoo
-          res.json(value);
-          saveTasks(value);
+            // Devuelve los proyectos obtenidos de Odoo
+            res.json(result);
+            saveProjects(result);
         }
-      });
     } else {
-      // Si el token no es válido, devuelve un error de autenticación
-      res.status(401).json({ error: 'Token JWT inválido' });
+        // Si el token no es válido, devuelve un error de autenticación
+        res.status(401).json({ error: 'Token JWT inválido' });
     }
-  } catch (error) {
+} catch (error) {
     // Error al decodificar el token JWT
     console.error('Error al decodificar el token JWT:', error);
     res.status(401).json({ error: 'Token JWT inválido' });
-  }
+}
 });
 
 // Ruta para obtener las tareas asociadas al usuario
 app.get('/api/userTasks', async (req, res) => {
-  
+
   try {
     // Verifica si el usuario está autenticado mediante el token JWT
     const token = req.headers.authorization.split(' ')[1]; // Obtén el token del encabezado Authorization
     const decodedToken = jwt.verify(token, 'secretkey');
-
-    // Si el token es válido, realiza la llamada a la API XML-RPC de Odoo para obtener las tareas de cada proyecto
+    
+    // Si el token es válido, realiza la llamada a la API JSON-RPC de Odoo para obtener los proyectos
     if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
-
-      // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener las tareas de cada proyecto
-      const params = [
-        decodedToken.database, // Nombre de la base de datos
-        decodedToken.userId, // ID del usuario
-        decodedToken.password, // Contraseña del usuario
-        'project.task', // Nombre del modelo de Odoo que contiene las tareas
-        'search_read', // Método de la API de Odoo para buscar y leer registros
-        [
-          [['user_ids', '=', decodedToken.userId]]
-        ], // Lista de condiciones de búsqueda (vacía para obtener todos los registros)
-        { fields: ['name', 'project_id', 'user_ids', 'date_deadline', 'stage_id'] } // Campos a devolver para cada tarea
-      ];
-
-      // Realiza la llamada al método XML-RPC de Odoo
-      client.methodCall('execute_kw', params, (error, value) => {
-        
-        if (error) {
-          getEmployeeTasks((err, tasks) => {
-            if (err) {
-              res.status(500).json({ error: 'Error interno del servidor' });
-            } else {
-              res.json(tasks);  // Devolver tareas locales
+        const requestData = {
+            jsonrpc: "2.0",
+            method: "call",
+            params: {
+                service: "object",
+                method: "execute_kw",
+                args: [
+                    decodedToken.database,  // Nombre de la base de datos
+                    decodedToken.userId,    // ID del usuario
+                    decodedToken.password,  // Contraseña del usuario
+                    'project.task',      // Nombre del modelo de Odoo que contiene los proyectos
+                    'search_read',          // Método de la API de Odoo para buscar y leer registros
+                    [
+                      [['user_ids', '=', decodedToken.userId]],
+                    ],                     // Lista de condiciones de búsqueda (vacía para obtener todos los registros)
+                    { fields: ['name', 'project_id', 'user_ids', 'date_deadline', 'stage_id'] } // Campos a devolver para cada proyecto
+                ]
             }
-          });
+        };
+
+        // Realiza la llamada al método JSON-RPC de Odoo
+        const response = await axios.post(ODOO_URL, requestData);
+        const { result, error } = response.data;
+
+        if (error) {
+            // Manejo de error al obtener proyectos de Odoo
+            console.error('Error al obtener proyectos de Odoo:', error);
+            getEmployeeTasks((err, projects) => {
+                if (err) {
+                    res.status(500).json({ error: 'Error interno del servidor' });
+                } else {
+                    res.json(projects);  // Devolver proyectos locales
+                }
+            });
         } else {
-          // Devuelve las tareas obtenidas de Odoo
-          res.json(value);
-          saveEmployeeTasks(value);
+            // Devuelve los proyectos obtenidos de Odoo
+            res.json(result);
+            saveEmployeeTasks(result);
         }
-      });
     } else {
-      // Si el token no es válido, devuelve un error de autenticación
-      res.status(401).json({ error: 'Token JWT inválido' });
+        // Si el token no es válido, devuelve un error de autenticación
+        res.status(401).json({ error: 'Token JWT inválido' });
     }
-  } catch (error) {
+} catch (error) {
     // Error al decodificar el token JWT
     console.error('Error al decodificar el token JWT:', error);
     res.status(401).json({ error: 'Token JWT inválido' });
-  }
+}
 });
 
 // Ruta para obtener las tareas de cada proyecto
@@ -538,47 +651,62 @@ app.get('/api/taskProject/:projectId', async (req, res) => {
 });
 
 // Ruta para obtener las hojas de tiempo (timesheets) del usuario autenticado
-app.get('/api/timesheets', async (req, res) => {
+ app.get('/api/timesheets', async (req, res) => {
+
   try {
-    const token = req.headers.authorization.split(' ')[1];
+    // Verifica si el usuario está autenticado mediante el token JWT
+    const token = req.headers.authorization.split(' ')[1]; // Obtén el token del encabezado Authorization
     const decodedToken = jwt.verify(token, 'secretkey');
 
+    // Si el token es válido, realiza la llamada a la API JSON-RPC de Odoo para obtener los timesheets
     if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
-
-      // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener los timesheets
-      const params = [
-        decodedToken.database,
-        decodedToken.userId,
-        decodedToken.password,
-        'account.analytic.line', // Modelo para los timesheets en Odoo
-        'search_read',
-        [
-          [['user_id', '=', decodedToken.userId]] // Condición para buscar los timesheets por el userId
-        ],
-        { fields: ['name', 'date_time', 'date_time_end', 'unit_amount', 'account_id', 'task_id', 'user_id'] } // Campos a devolver para cada timesheet
-      ];
-      // Realiza la llamada al método XML-RPC de Odoo
-      client.methodCall('execute_kw', params, (error, value) => {
-        if (error) {
-          getTimeEntries((err, timesheet) => {
-            if (err) {
-              res.status(500).json({ error: 'Error interno del servidor' });
-            } else {
-              res.json(timesheet);  // Devolver tareas locales
+        const requestData = {
+            jsonrpc: "2.0",
+            method: "call",
+            params: {
+                service: "object",
+                method: "execute_kw",
+                args: [
+                    ODOO_DB,                 // Nombre de la base de datos
+                    decodedToken.userId,     // ID del usuario
+                    decodedToken.password,   // Contraseña del usuario
+                    'account.analytic.line', // Modelo para los timesheets en Odoo
+                    'search_read',           // Método de la API de Odoo para buscar y leer registros
+                    [
+                        [['user_id', '=', decodedToken.userId]] // Condición para buscar los timesheets por el userId
+                    ],
+                    { fields: ['name', 'date_time', 'date_time_end', 'unit_amount', 'account_id', 'task_id', 'user_id'] } // Campos a devolver para cada timesheet
+                ]
             }
-          });
+        };
+
+        
+
+        // Realiza la llamada al método JSON-RPC de Odoo
+        const response = await axios.post(ODOO_URL, requestData);
+        const { result, error } = response.data;
+
+        if (error) {
+            // Manejo de error al obtener timesheets de Odoo
+            console.error('Error al obtener timesheets de Odoo:', error);
+            getTimeEntries((err, timesheet) => {
+                if (err) {
+                    res.status(500).json({ error: 'Error interno del servidor' });
+                } else {
+                    res.json(timesheet); // Devolver timesheets locales
+                }
+            });
         } else {
-          // Devuelve las tareas obtenidas de Odoo
-          
-          res.json(value);
-          saveTimeEntries(value);
+            // Devuelve los timesheets obtenidos de Odoo
+            res.json(result);
+            saveTimeEntries(result);
         }
-      });
     } else {
-      res.status(401).json({ error: 'Token JWT inválido' });
+        // Si el token no es válido, devuelve un error de autenticación
+        res.status(401).json({ error: 'Token JWT inválido' });
     }
   } catch (error) {
+    // Error al decodificar el token JWT
     console.error('Error al decodificar el token JWT:', error);
     res.status(401).json({ error: 'Token JWT inválido' });
   }

@@ -9,11 +9,13 @@ import Placeholder from 'react-bootstrap/Placeholder';
 import Swal from 'sweetalert2'
 import Lottie from 'react-lottie-player';
 import emptyState from '../../animation/emptyState.json';
+import lupa from '../img/lupa.svg';
 
 export const Projects = () => {
 
     const [proyectos, setProyectos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [activeItem, setActiveItem] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
@@ -67,12 +69,15 @@ export const Projects = () => {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', height: '100vh' }}>
-        <div>
-            <div className="w-100 d-flex align-items-center mb-3">
-                <Button variant="link" onClick={goBack} className="p-0 me-2 d-flex align-items-center">
-                    <ArrowLeftShort size={32} style={{color: '#ECB136'}} />
-                </Button>
-                <h2 className="pages-titles">Proyectos</h2>
+        <div style={{ maxWidth: '1200px', width: '90%', padding: '20px', backgroundColor: '#fff', borderRadius: '8px', boxSizing: 'border-box', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)' }}>
+            <div className="w-100 d-flex align-items-center justify-content-between mb-3">
+                <div className="d-flex align-items-center">
+                    <Button variant="link" onClick={goBack} className="p-0 me-2 d-flex align-items-center">
+                        <ArrowLeftShort size={32} style={{color: '#ECB136'}} />
+                    </Button>
+                    <h2 className="pages-titles">Proyectos</h2>
+                </div>
+                <img src={lupa} alt="Lupa" style={{ width: '30px', height: '30px' }} />
             </div>
             {isLoading ? (
                 <Card style={{ width: '18rem', marginBottom: '20px' }}>
@@ -104,15 +109,27 @@ export const Projects = () => {
                             
                         >
                             {proyectos.map(proyecto => (
-                                <Accordion.Item key={proyecto.id} eventKey={proyecto.id}>
-                                    <Accordion.Header>
+                                <Accordion.Item 
+                                    key={proyecto.id} 
+                                    eventKey={proyecto.id}
+                                    style={{ marginBottom: '10px', border: 'none', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}
+                                    >
+                                    
+                                    <Accordion.Header
+                                        style={{
+                                            borderBottom: 'none',
+                                            background: 'none',
+                                        }}    
+                                    >
                                         <span className='pages-titles'>{proyecto.name}</span>
                                     </Accordion.Header>
+                                    
                                     <Accordion.Body style={{ padding: '10px' }}>
                                         <p className='pages-titles'>Tareas asignadas: <span style={{fontWeight: 'normal', color: '#ECB136'}}>{proyecto.task_count}</span></p>
                                         <p className='pages-titles'>Fecha de inicio: <span style={{fontWeight: 'normal'}}>{proyecto.date_start}</span></p>
                                         <p className='pages-titles'>Fecha de finalización: <span style={{fontWeight: 'normal'}}>{proyecto.date}</span></p>
                                         <p className='pages-titles'>Descripción: <span style={{fontWeight: 'normal'}}>{proyecto.description}</span></p>
+                                    
                                     </Accordion.Body>
                                 </Accordion.Item>
                             ))}

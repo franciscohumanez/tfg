@@ -52,7 +52,7 @@ body, html {
 .auth-button {
     background-color: white !important;
     color: #ECB136 !important;
-    border-color: white !important;
+    border-color: #ECB136 !important;
     font-weight: bold !important;
     margin-top: 20px !important;
     border-radius: 45px !important;
@@ -135,7 +135,6 @@ body, html {
 
 .pages-titles {
     text-align: left;
-    display: block;
     color: #AEAEAE !important;
     font-weight: bold;
 }

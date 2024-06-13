@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Button } from 'react-bootstrap';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Lottie from 'react-lottie-player';
 import emptyState from '../../animation/emptyState.json';
@@ -17,6 +17,7 @@ export const Asdf = () => {
 
   const [tasks, setTasks] = useState([]);
   const location = useLocation();
+  const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -82,6 +83,10 @@ export const Asdf = () => {
     },
   };
 
+  const redirecTareas = () => {
+    navigate('tasksEmployee');
+  }
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
       <div>
@@ -112,7 +117,10 @@ export const Asdf = () => {
                                 style={{ width: '18rem', marginBottom: '20px', cursor: 'pointer', border: 'none', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}
                                 key={task.id}
                             >
-                                <Card.Body className='pages-titles' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Card.Body 
+                                  className='pages-titles' 
+                                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                                  onClick={redirecTareas}>
                                 {task.name} <FontAwesomeIcon icon={faAngleRight} size="xl" style={{color: '#ECB136', marginLeft: '10px'}} />
                                 </Card.Body>
                             </Card>

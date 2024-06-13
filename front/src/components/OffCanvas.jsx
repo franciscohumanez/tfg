@@ -71,15 +71,15 @@ export const OffCanvas = ({ userName }) => {
                 <Offcanvas.Body className="d-flex flex-column">
 
                     <ListGroup variant="flush">
-                        <ListGroup.Item onClick={handleProjectsClick}>Proyectos</ListGroup.Item>
-                        <ListGroup.Item onClick={handleMyProjectsClick}>Mis proyectos</ListGroup.Item>
-                        <ListGroup.Item onClick={handleTasksClick}>Tareas</ListGroup.Item>
-                        <ListGroup.Item onClick={handleMyTasksClick}>Mis tareas</ListGroup.Item>
-                        <ListGroup.Item onClick={handleEmployeeClick}>Yo</ListGroup.Item>
+                        <ListGroup.Item style={{color: '#AEAEAE'}} onClick={handleProjectsClick}>Proyectos</ListGroup.Item>
+                        <ListGroup.Item style={{color: '#AEAEAE'}} onClick={handleMyProjectsClick}>Mis proyectos</ListGroup.Item>
+                        <ListGroup.Item style={{color: '#AEAEAE'}} onClick={handleTasksClick}>Tareas</ListGroup.Item>
+                        <ListGroup.Item style={{color: '#AEAEAE'}} onClick={handleMyTasksClick}>Mis tareas</ListGroup.Item>
+                        <ListGroup.Item style={{color: '#AEAEAE'}} onClick={handleEmployeeClick}>Yo</ListGroup.Item>
                     </ListGroup>
                     <br/>
-                    <Button variant="danger" onClick={logOut}>
-                        <IoExit /> Cerrar sesión
+                    <Button style={{background: 'transparent'}} onClick={logOut}>
+                        <IoExit /> <span style={{color: '#AEAEAE'}}>Cerrar sesión</span>
                     </Button>
                 </Offcanvas.Body>
             </Offcanvas>

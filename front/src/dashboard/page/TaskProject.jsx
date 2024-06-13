@@ -9,13 +9,13 @@ import emptyState from '../../animation/emptyState.json';
 
 export const TaskProject = () => {
     const { projectId } = useParams();
-    const navigate = useNavigate();
     const [tasks, setTasks] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [name, setName] = useState('');
     const [currentTaskId, setCurrentTaskId] = useState(localStorage.getItem('currentTaskId'));
     const [currentEntryId, setCurrentEntryId] = useState(localStorage.getItem('currentEntryId'));
+    const navigate = useNavigate();
 
 
     useEffect(() => {

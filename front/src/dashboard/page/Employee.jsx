@@ -63,7 +63,7 @@ export const Employee = () => {
         if (response.status < 200 || response.status >= 300) {
           throw new Error('Error al obtener las entradas de tiempo');
         }
-        console.log(response.data)
+        
         setTimeEntries(response.data);
       } catch (error) {
         console.error('Error al obtener las entradas de tiempo:', error);
@@ -103,78 +103,51 @@ export const Employee = () => {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', height: '100vh' }}>
-      <div>
+    <div style={{ display: 'flex', justifyContent: 'center', alignContent: 'center', height: '100vh', padding: '20px' }}>
+      <div style={{ maxWidth: '1200px', width: '100%', padding: '20px', backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)' }}>
         <div className="w-100 d-flex align-items-center mb-3">
             <Button variant="link" onClick={goBack} className="p-0 me-2 d-flex align-items-center">
                 <ArrowLeftShort size={32} style={{color: '#F8B944'}} />
             </Button>
-            <h2 className="m-0 text-center">Información del empleado</h2>
+            <h2 className="m-0 text-center pages-titles">Mi Perfil</h2>
         </div>
-        {isLoading ? (
-          <Card style={{ width: '18rem', marginBottom: '20px' }}>
-            <Card.Body>
-              <Placeholder as={Card.Title} animation="glow">
-                <Placeholder xs={6} />
-              </Placeholder>
-              <Placeholder as={Card.Text} animation="glow">
-                <Placeholder xs={7} /> <Placeholder xs={4} /> <Placeholder xs={4} />{' '}
-                <Placeholder xs={6} /> <Placeholder xs={8} />
-              </Placeholder>
-            </Card.Body>
-          </Card>
-        ) : (
-            employees.map(employee => (
-              <Card 
-                style={{ width: '18rem', marginBottom: '20px', cursor: 'pointer',  }}
-                key={employee.id}  
-              >
-                <Card.Body style={{ padding: '10px' }}>
-                  {employee.avatar_1024 && <Card.Img variant="top" src={`data:image/jpeg;base64,${employee.avatar_1024}`} alt="Foto del empleado" />}
-                  <Card.Title>{employee.name}</Card.Title>
-                  <Card.Subtitle className="mb-2 text-muted">
-                    <p>Departamento: {employee.department_id}</p>
-                    <p>Puesto: {employee.job_id}</p>
-                    <p>Email: {employee.work_email}</p>
-                  </Card.Subtitle>
-                </Card.Body>
-              </Card>
-            ))
-          )}
-          <h3 className="mt-4">Entradas de Tiempo</h3>
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>Tarea</th>
-              <th>Descripción</th>
-              <th>Duración</th>
-            </tr>
-          </thead>
-          <tbody>
-            {timeEntries.map(entry => (
-              <tr key={entry.id} onClick={() => handleRowClick(entry)} style={{ cursor: 'pointer' }}>
-                <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>{entry.task_id}</td>
-                <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>{entry.name}</td>
-                <td>{entry.date_time_end ? formatElapsedTime(new Date(entry.date_time_end) - new Date(entry.date_time)) : 'Sin finalizar'}</td>
+          <h3 className="pages-titles">Entradas de Tiempo</h3>
+        <div style={{ overflow: 'auto'}}>
+          <Table >
+            <thead>
+              <tr>
+                <th className='pages-titles' style={{ width: '20%' }}>Tarea</th>
+                <th className='pages-titles' style={{ width: '50%' }}>Descripción</th>
+                <th className='pages-titles' style={{ width: '30%' }}>Duración</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {timeEntries.map(entry => (
+                <tr key={entry.id} onClick={() => handleRowClick(entry)} style={{ cursor: 'pointer' }}>
+                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px', color: '#ECB136' }}>{entry.task_id[0]}</td>
+                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>{entry.name}</td>
+                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>{entry.date_time_end ? formatElapsedTime(new Date(entry.date_time_end) - new Date(entry.date_time)) : 'Sin finalizar'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
+        
         {selectedEntry && (
           <Modal show={showModal} onHide={handleCloseModal}>
             <Modal.Header closeButton>
               <Modal.Title>Detalles</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <p><strong>Proyecto:</strong> {selectedEntry.account_id}</p>
+              <p><strong>Proyecto:</strong> {selectedEntry.account_id[1]}</p>
               <p><strong>Tarea:</strong> {selectedEntry.task_id}</p>
               <p><strong>Descripción:</strong> {selectedEntry.name}</p>
               <p><strong>Hora de Inicio:</strong> {selectedEntry.date_time}</p>
               <p><strong>Hora de Fin:</strong> {selectedEntry.date_time_end}</p>
-              <p><strong>Usuario:</strong> {selectedEntry.user_id}</p>
+              <p><strong>Usuario:</strong> {selectedEntry.user_id[1]}</p>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick={handleCloseModal}>
+              <Button className='task-button' onClick={handleCloseModal}>
                 Cerrar
               </Button>
             </Modal.Footer>

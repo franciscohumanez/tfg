@@ -8,16 +8,22 @@ import Lottie from 'react-lottie-player';
 import emptyState from '../../animation/emptyState.json';
 import Swal from 'sweetalert2'
 import axios from 'axios';
+//import sqlite3 from 'sqlite3';
+//const db = new sqlite3.Database('../../../back/odoo.db');
 
 
 export const TasksEmployee = () => {
 
     const [tasks, setTasks] = useState([]);
+    const [timesheet, setTimesheet] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [name, setName] = useState('');
+    const [currentTaskId, setCurrentTaskId] = useState(localStorage.getItem('currentTaskId'));
+    const [currentEntryId, setCurrentEntryId] = useState(localStorage.getItem('currentEntryId'));
+    const [timeEntries, setTimeEntries] = useState([]);
     const location = useLocation();
     const navigate = useNavigate();
-    const [currentTaskId, setCurrentTaskId] = useState(localStorage.getItem('currentTaskId'));
     const token = localStorage.getItem('token');
 
     useEffect(() => {
@@ -53,8 +59,74 @@ export const TasksEmployee = () => {
         }
         };
 
+        const fetchTimeEntries = async () => {
+            const token = localStorage.getItem('token');
+      
+            try {
+              const response = await axios.get('http://localhost:3000/api/timesheets', {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                }
+              });
+      
+              if (response.status < 200 || response.status >= 300) {
+                throw new Error('Error al obtener las entradas de tiempo');
+              }
+
+              setTimeEntries(response.data);
+            } catch (error) {
+              console.error('Error al obtener las entradas de tiempo:', error);
+              Swal.fire({
+                showConfirmButton: true,
+                icon: 'error',
+                text: 'Error en el servidor.'
+              });
+            }
+          };
+
         obtenerTareas();
+        fetchTimeEntries();
+        
     }, [location.state]);
+
+    const handleSubmit = async () => {
+        const token = localStorage.getItem('token');
+        const userName = localStorage.getItem('userName');
+        const taskName = name;
+
+        try {
+            const response = await axios.post('http://localhost:3000/api/startTask', {
+                task_id: currentTaskId,
+                task_name: taskName,
+                user_name: userName, // Asegúrate de guardar userId en localStorage al iniciar sesión
+                name
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status < 200 || response.status >= 300) {
+                throw new Error('Error al iniciar tarea');
+            }
+            
+            setCurrentEntryId(response.data.id);
+            localStorage.setItem('currentTaskId', currentTaskId);
+            localStorage.setItem('currentEntryId', response.data.id);
+            setShowModal(false);
+        } catch (error) {
+            console.error('Error al iniciar tarea:', error);
+            Swal.fire({
+                showConfirmButton: true,
+                icon: 'error',
+                text: 'Error en el servidor.'
+            });
+        }
+    };
+
+    
 
     const goBack = () => {
         navigate('/');
@@ -65,6 +137,23 @@ export const TasksEmployee = () => {
         setShowModal(true);
     };
 
+    const renderButton = (task) => {
+        const currentEntry = timeEntries.find(entry => entry.task_id === task.id && entry.date_time_end === null);
+        if (currentEntry) {
+            return (
+                <Button className='task-button' style={{ backgroundColor: '#f44336', borderColor: '#f44336' }}>
+                    Finalizar
+                </Button>
+            );
+        } else {
+            return (
+                <Button onClick={() => handleStartTask(task.id)} className='task-button'>
+                    Comenzar
+                </Button>
+            );
+        }
+    };
+
     return (
         <div style={{ display: 'flex', justifyContent: 'center', height: '100vh' }}>
             <div>
@@ -72,7 +161,7 @@ export const TasksEmployee = () => {
                     <Button variant="link" onClick={goBack} className="p-0 me-2 d-flex align-items-center">
                         <ArrowLeftShort size={32} style={{color: '#F8B944'}} />
                     </Button>
-                    <h2 className='pages-titles'>Mis tareas</h2>
+                    <h2 className='m-0 text-center pages-titles'>Mis tareas</h2>
                 </div>
                 {isLoading ? (
                     <Card style={{ width: '18rem', marginBottom: '20px' }}>
@@ -99,6 +188,7 @@ export const TasksEmployee = () => {
                         </div>
                     ) : (
                         tasks.map(task => (
+                            
                             <Card
                                 style={{ width: '18rem', marginBottom: '20px', cursor: 'pointer', border: 'none', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}
                                 key={task.id}
@@ -111,14 +201,11 @@ export const TasksEmployee = () => {
                                         <p className='pages-titles'>Fecha límite: <span style={{fontWeight: 'normal'}}>{task.date_deadline}</span></p>
                                         <p className='pages-titles'>Estado: <span style={{fontWeight: 'normal'}}>{task.stage_id}</span></p>
                                     </Card.Subtitle>
-                                    <Button onClick={() => handleStartTask(task.id)} className='task-button'>
-                                        Comenzar
-                                    </Button>
+                                    {renderButton(task)}
                                 </Card.Body>
                             </Card>
                         ))
                     )
-                    
                 )}
                 <Modal show={showModal} onHide={() => setShowModal(false)}>
                     <Modal.Header closeButton>
@@ -135,16 +222,19 @@ export const TasksEmployee = () => {
                             />
                         </Form.Group>
                     </Modal.Body>
-                    <Modal.Footer>
+                    <Modal.Footer style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Button 
+                            style={{width: '45%', borderColor: '#ECB136'}}
                             className='auth-button'
                             onClick={() => setShowModal(false)}
-                            style={{width: '50%', borderColor: '#ECB136'}}>
+                        >
                             Cancelar
                         </Button>
                         <Button 
                             className='task-button'
-                            style={{width: '50%'}}>
+                            style={{width: '45%'}}
+                            onClick={handleSubmit}
+                        >
                             Comenzar
                         </Button>
                     </Modal.Footer>

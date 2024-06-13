@@ -3,10 +3,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Placeholder } from 'react-bootstrap';
 import { ArrowLeftShort } from 'react-bootstrap-icons';
+import Accordion from 'react-bootstrap/Accordion';
 import Swal from 'sweetalert2';
 import Lottie from 'react-lottie-player';
 import emptyState from '../../animation/emptyState.json';
-import Modal from 'react-bootstrap/Modal';
+import lupa from '../img/lupa.svg';
 
 export const Tasks = () => {
 
@@ -98,12 +99,15 @@ export const Tasks = () => {
 
     return (
         <div style={{ display: 'flex', justifyContent: 'center', height: '100vh' }}>
-            <div>
-                <div className="w-100 d-flex align-items-center mb-3">
-                    <Button variant="link" onClick={goBack} className="p-0 me-2 d-flex align-items-center">
-                        <ArrowLeftShort size={32} style={{color: '#F8B944'}} />
-                    </Button>
-                    <h2 className="m-0 text-center">Tareas</h2>
+            <div style={{ maxWidth: '1200px', width: '90%', padding: '20px', backgroundColor: '#fff', borderRadius: '8px', boxSizing: 'border-box', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)' }}>
+                <div className="w-100 d-flex align-items-center justify-content-between mb-3">
+                    <div className="d-flex align-items-center">
+                    <   Button variant="link" onClick={goBack} className="p-0 me-2 d-flex align-items-center">
+                            <ArrowLeftShort size={32} style={{color: '#F8B944'}} />
+                        </Button>
+                        <h2 className="m-0 text-center pages-titles">Tareas</h2>
+                    </div>
+                    <img src={lupa} alt="Lupa" style={{ width: '30px', height: '30px' }} />
                 </div>
                     {isLoading ? (  
                         <Card style={{ width: '18rem', marginBottom: '20px' }}>
@@ -129,26 +133,46 @@ export const Tasks = () => {
                                 <p>No hay tareas</p>
                             </div>
                         ) : (
-                            tasks.map(task => (
-                                <Card
-                                    style={{ width: '18rem', marginBottom: '20px', cursor: 'pointer' }}
-                                    className={getColorClass(task.stage_id)}
-                                    key={task.id}
-                                >
-                                    <Card.Body style={{ padding: '10px' }}>
-                                        <Card.Title>{task.name}</Card.Title>
-                                        <Card.Subtitle className="mb-2 text-muted">
-                                            <p>Proyecto: {task.project_id}</p>
-                                            <p>Asignado a: {task.user_ids}</p>
-                                            <p>Fecha límite: {task.date_deadline}</p>
-                                            <p>Estado: {task.stage_id}</p>
-                                        </Card.Subtitle>
-                                        {/* <Button onClick={() => handleStartWork(task.id)} variant="primary">
-                                            Comenzar Trabajo
-                                        </Button> */}
-                                    </Card.Body>
-                                </Card>
-                            ))
+                            // tasks.map(task => (
+                            //     <Card
+                            //         style={{ width: '18rem', marginBottom: '20px', cursor: 'pointer' }}
+                            //         className={getColorClass(task.stage_id)}
+                            //         key={task.id}
+                            //     >
+                            //         <Card.Body style={{ padding: '10px' }}>
+                            //             <Card.Title>{task.name}</Card.Title>
+                            //             <Card.Subtitle className="mb-2 text-muted">
+                            //                 <p>Proyecto: {task.project_id}</p>
+                            //                 <p>Asignado a: {task.user_ids}</p>
+                            //                 <p>Fecha límite: {task.date_deadline}</p>
+                            //                 <p>Estado: {task.stage_id}</p>
+                            //             </Card.Subtitle>
+                            //             {/* <Button onClick={() => handleStartWork(task.id)} variant="primary">
+                            //                 Comenzar Trabajo
+                            //             </Button> */}
+                            //         </Card.Body>
+                            //     </Card>
+                            //))
+
+                            <Accordion
+                            defaultActiveKey="0"
+                            style={{ width: '18rem', marginBottom: '20px', cursor: 'pointer' }}
+                            
+                        >
+                            {tasks.map(task => (
+                                <Accordion.Item key={task.id} eventKey={task.id} style={{ marginBottom: '10px', border: 'none', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+                                    <Accordion.Header>
+                                        <span className='pages-titles'>{task.name}</span>
+                                    </Accordion.Header>
+                                    <Accordion.Body style={{ padding: '10px' }}>
+                                        <p className='pages-titles'>Proyecto: <span style={{fontWeight: 'normal', color: '#ECB136'}}>{task.project_id}</span></p>
+                                        <p className='pages-titles'>Asignado a: <span style={{fontWeight: 'normal'}}>{task.user_ids}</span></p>
+                                        <p className='pages-titles'>Fecha de finalización: <span style={{fontWeight: 'normal'}}>{task.date_deadline}</span></p>
+                                        <p className='pages-titles'>Estado: <span style={{fontWeight: 'normal'}}></span></p>
+                                    </Accordion.Body>
+                                </Accordion.Item>
+                            ))}
+                        </Accordion>
                         )
                     )}
             </div>
