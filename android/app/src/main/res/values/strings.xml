@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">appOdoo</string>
+    <string name="title_activity_main">appOdoo</string>
+    <string name="package_name">io.ionic.appOdoo</string>
+    <string name="custom_url_scheme">io.ionic.appOdoo</string>
+</resources>

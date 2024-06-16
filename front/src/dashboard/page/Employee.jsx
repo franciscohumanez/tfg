@@ -124,7 +124,7 @@ export const Employee = () => {
             <tbody>
               {timeEntries.map(entry => (
                 <tr key={entry.id} onClick={() => handleRowClick(entry)} style={{ cursor: 'pointer' }}>
-                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px', color: '#ECB136' }}>{entry.task_id[0]}</td>
+                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px', color: '#ECB136' }}>{entry.task_id}</td>
                   <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>{entry.name}</td>
                   <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>{entry.date_time_end ? formatElapsedTime(new Date(entry.date_time_end) - new Date(entry.date_time)) : 'Sin finalizar'}</td>
                 </tr>
@@ -139,12 +139,12 @@ export const Employee = () => {
               <Modal.Title>Detalles</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <p><strong>Proyecto:</strong> {selectedEntry.account_id[1]}</p>
+              <p><strong>Proyecto:</strong> {selectedEntry.account_id}</p>
               <p><strong>Tarea:</strong> {selectedEntry.task_id}</p>
               <p><strong>Descripción:</strong> {selectedEntry.name}</p>
               <p><strong>Hora de Inicio:</strong> {selectedEntry.date_time}</p>
               <p><strong>Hora de Fin:</strong> {selectedEntry.date_time_end}</p>
-              <p><strong>Usuario:</strong> {selectedEntry.user_id[1]}</p>
+              <p><strong>Usuario:</strong> {selectedEntry.user_id}</p>
             </Modal.Body>
             <Modal.Footer>
               <Button className='task-button' onClick={handleCloseModal}>

@@ -116,6 +116,49 @@ export const TasksEmployee = () => {
             localStorage.setItem('currentTaskId', currentTaskId);
             localStorage.setItem('currentEntryId', response.data.id);
             setShowModal(false);
+            window.location.reload();
+        } catch (error) {
+            console.error('Error al iniciar tarea:', error);
+            Swal.fire({
+                showConfirmButton: true,
+                icon: 'error',
+                text: 'Error en el servidor.'
+            });
+        }
+    };
+
+
+    const handleStopTask = async (entryId) => {
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await axios.post('http://localhost:3000/api/stopTask', {
+                entry_id: entryId
+            },{
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status < 200 || response.status >= 300) {
+                throw new Error('Error al iniciar tarea');
+            }
+
+            // Refresca las entradas de tiempo
+            const updatedEntries = timeEntries.map(entry => {
+                if (entry.id === entryId) {
+                    return { ...entry, date_time_end: new Date().toISOString() };
+                }
+                return entry;
+            });
+            setTimeEntries(updatedEntries);
+            
+            Swal.fire({
+                showConfirmButton: true,
+                icon: 'success',
+                text: 'Tarea detenida exitosamente. Tiempo transcurrido: ' + response.data.elapsedTime
+            });
         } catch (error) {
             console.error('Error al iniciar tarea:', error);
             Swal.fire({
@@ -132,6 +175,10 @@ export const TasksEmployee = () => {
         navigate('/');
     };
 
+    const goProject = () => {
+        navigate('/projects');
+    };
+
     const handleStartTask = (taskId) => {
         setCurrentTaskId(taskId);
         setShowModal(true);
@@ -141,7 +188,7 @@ export const TasksEmployee = () => {
         const currentEntry = timeEntries.find(entry => entry.task_id === task.id && entry.date_time_end === null);
         if (currentEntry) {
             return (
-                <Button className='task-button' style={{ backgroundColor: '#f44336', borderColor: '#f44336' }}>
+                <Button onClick={() => handleStopTask(currentEntry.id)} className='task-button' style={{ backgroundColor: '#f44336', borderColor: '#f44336' }}>
                     Finalizar
                 </Button>
             );
@@ -150,6 +197,7 @@ export const TasksEmployee = () => {
                 <Button onClick={() => handleStartTask(task.id)} className='task-button'>
                     Comenzar
                 </Button>
+                
             );
         }
     };
@@ -197,7 +245,7 @@ export const TasksEmployee = () => {
                                     <Card.Title><span className='pages-titles'>{task.name}</span></Card.Title>
                                     <hr style={{ margin: '10px 0', borderTop: '2px solid #AEAEAE' }} />
                                     <Card.Subtitle className="mb-2 mt-2 text-muted">
-                                        <p className='pages-titles'>Proyecto: <span style={{fontWeight: 'normal', color: '#ECB136'}}>{task.project_id}</span></p>
+                                        <p className='pages-titles'>Proyecto: <span onClick={goProject} style={{fontWeight: 'normal', color: '#ECB136'}}>{task.project_id}</span></p>
                                         <p className='pages-titles'>Fecha límite: <span style={{fontWeight: 'normal'}}>{task.date_deadline}</span></p>
                                         <p className='pages-titles'>Estado: <span style={{fontWeight: 'normal'}}>{task.stage_id}</span></p>
                                     </Card.Subtitle>

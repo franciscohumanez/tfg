@@ -8,6 +8,9 @@ import Image from 'react-bootstrap/Image';
 import ListGroup from 'react-bootstrap/ListGroup';
 import axios from 'axios';
 import Swal from 'sweetalert2'
+import club from '../dashboard/img/Icon-Club-1.svg'
+import cog from '../dashboard/img/cog.svg'
+import edit from '../dashboard/img/Edit.svg'
 
 export const OffCanvas = ({ userName }) => {
 
@@ -34,6 +37,11 @@ export const OffCanvas = ({ userName }) => {
             }
           });
     };
+
+    const handleDashboard = () => {
+        navigate('/');
+        handleClose();
+    }
 
     const handleProjectsClick = () => {
         navigate('/projects');
@@ -71,16 +79,33 @@ export const OffCanvas = ({ userName }) => {
                 <Offcanvas.Body className="d-flex flex-column">
 
                     <ListGroup variant="flush">
-                        <ListGroup.Item style={{color: '#AEAEAE'}} onClick={handleProjectsClick}>Proyectos</ListGroup.Item>
-                        <ListGroup.Item style={{color: '#AEAEAE'}} onClick={handleMyProjectsClick}>Mis proyectos</ListGroup.Item>
-                        <ListGroup.Item style={{color: '#AEAEAE'}} onClick={handleTasksClick}>Tareas</ListGroup.Item>
-                        <ListGroup.Item style={{color: '#AEAEAE'}} onClick={handleMyTasksClick}>Mis tareas</ListGroup.Item>
-                        <ListGroup.Item style={{color: '#AEAEAE'}} onClick={handleEmployeeClick}>Yo</ListGroup.Item>
+                        <ListGroup.Item style={{color: '#AEAEAE'}} className="d-flex align-items-center" onClick={handleDashboard}>
+                            <img src={club} alt="Lupa" style={{ marginRight: '5px' }} />
+                            Dashboard
+                        </ListGroup.Item>
+                        <ListGroup.Item style={{color: '#AEAEAE'}} className="d-flex align-items-center" onClick={handleProjectsClick}>
+                            <img src={cog} alt="Lupa" style={{ marginRight: '5px' }} />
+                            Proyectos
+                        </ListGroup.Item>
+                        <ListGroup.Item style={{color: '#AEAEAE'}} className="d-flex align-items-center" onClick={handleMyProjectsClick}>
+                            <img src={cog} alt="Lupa" style={{ marginRight: '5px' }} />
+                            Mis proyectos
+                        </ListGroup.Item>
+                        <ListGroup.Item style={{color: '#AEAEAE'}} className="d-flex align-items-center" onClick={handleTasksClick}>
+                            <img src={edit} alt="Lupa" style={{ marginRight: '5px' }} />
+                            Tareas
+                        </ListGroup.Item>
+                        <ListGroup.Item style={{color: '#AEAEAE'}} onClick={handleMyTasksClick}>
+                            <img src={edit} alt="Lupa" style={{ marginRight: '5px' }} />
+                            Mis tareas
+                        </ListGroup.Item>
+                        <ListGroup.Item style={{color: '#AEAEAE'}} onClick={handleEmployeeClick}>Mi perfil</ListGroup.Item>
+                        
                     </ListGroup>
-                    <br/>
-                    <Button style={{background: 'transparent'}} onClick={logOut}>
-                        <IoExit /> <span style={{color: '#AEAEAE'}}>Cerrar sesión</span>
-                    </Button>
+                    <ListGroup.Item style={{color: '#AEAEAE'}} className="d-flex align-items-center mt-auto" onClick={logOut}>
+                            <IoExit style={{ color: '#ECB136', marginRight: '5px' }}  />
+                            Cerrar sesión
+                        </ListGroup.Item>
                 </Offcanvas.Body>
             </Offcanvas>
         </>

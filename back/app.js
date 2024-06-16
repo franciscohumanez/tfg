@@ -46,47 +46,47 @@ const loginWithJsonRpc = async (database, email, password) => {
 };
 
 // Sincronización con Odoo
-const syncFromOdoo = async (token) => {
-  if (!token) {
-    console.error('No token provided for syncFromOdoo');
-    return;
-  }
+// const syncFromOdoo = async (token) => {
+//   if (!token) {
+//     console.error('No token provided for syncFromOdoo');
+//     return;
+//   }
 
-  const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
-  const decodedToken = jwt.verify(token, 'secretkey');
+//   const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
+//   const decodedToken = jwt.verify(token, 'secretkey');
 
-  if (decodedToken) {
-    const params = [
-      decodedToken.database,
-      decodedToken.userId,
-      decodedToken.password,
-      'account.analytic.line', 
-      'search_read',
-      [['user_id', '=', decodedToken.userId]],
-      { fields: ['name', 'date_time', 'date_time_end', 'unit_amount', 'account_id', 'task_id', 'user_id'] }
-    ];
+//   if (decodedToken) {
+//     const params = [
+//       decodedToken.database,
+//       decodedToken.userId,
+//       decodedToken.password,
+//       'account.analytic.line', 
+//       'search_read',
+//       [['user_id', '=', decodedToken.userId]],
+//       { fields: ['name', 'date_time', 'date_time_end', 'unit_amount', 'account_id', 'task_id', 'user_id'] }
+//     ];
     
-    client.methodCall('execute_kw', params, (error, value) => {
-      if (error) {
-        console.error('Error al obtener datos de Odoo:', error);
-      } else {
-        saveTimeEntries2(value);
-      }
-    });
-  }
-};
+//     client.methodCall('execute_kw', params, (error, value) => {
+//       if (error) {
+//         console.error('Error al obtener datos de Odoo:', error);
+//       } else {
+//         saveTimeEntries2(value);
+//       }
+//     });
+//   }
+// };
 
-const saveTimeEntries2 = (entries) => {
-  const stmt = db.prepare(
-    `INSERT OR REPLACE INTO time_entries (task_id, user_id, start_time, end_time, description) VALUES (?, ?, ?, ?, ?)`
-  );
+// const saveTimeEntries2 = (entries) => {
+//   const stmt = db.prepare(
+//     `INSERT OR REPLACE INTO time_entries (task_id, user_id, start_time, end_time, description) VALUES (?, ?, ?, ?, ?)`
+//   );
 
-  entries.forEach(entry => {
-    stmt.run(entry.task_id[0], entry.user_id[0], entry.date_time, entry.date_time_end, entry.name);
-  });
+//   entries.forEach(entry => {
+//     stmt.run(entry.task_id[0], entry.user_id[0], entry.date_time, entry.date_time_end, entry.name);
+//   });
 
-  stmt.finalize();
-};
+//   stmt.finalize();
+// };
 
 // Ruta para manejar las solicitudes de inicio de sesión
 app.post('/api/login', async (req, res) => {
@@ -100,7 +100,7 @@ app.post('/api/login', async (req, res) => {
           // Usuario correcto, genera el token JWT y responde al cliente
           const token = jwt.sign({ email, database: ODOO_DB, password, userId }, 'secretkey', { expiresIn: '24h' });
           res.json({ token });
-          syncFromOdoo(token);
+          //syncFromOdoo(token);
       } else {
           // Credenciales incorrectas, devuelve un error
           res.status(401).json({ error: 'Credenciales incorrectas' });
@@ -178,11 +178,11 @@ const saveTasks = (tasks) => {
 
 const saveEmployeeTasks = (tasks) => {
   // Borrar todos los registros existentes en la tabla projects
-  db.run("DELETE FROM employeeTasks", (err) => {
-    if (err) {
-      console.error("Error deleting records:", err.message);
-      return;
-    }
+  // db.run("DELETE FROM employeeTasks", (err) => {
+  //   if (err) {
+  //     console.error("Error deleting records:", err.message);
+  //     return;
+  //   }
 
     // Preparar la instrucción para insertar o reemplazar registros
     const stmt = db.prepare("INSERT OR REPLACE INTO employeeTasks (id, name, project_id, user_ids, date_deadline, stage_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -194,7 +194,7 @@ const saveEmployeeTasks = (tasks) => {
 
     // Finalizar la instrucción
     stmt.finalize();
-  });
+  //});
 };
 
 const saveEmployee = (employee) => {
@@ -291,9 +291,6 @@ const getEmployee = (callback) => {
 };
 
 const getTimeEntries = (callback) => {
-  // Verifica si el usuario está autenticado mediante el token JWT
-  // const token = req.headers.authorization.split(' ')[1]; // Obtén el token del encabezado Authorization
-  // const decodedToken = jwt.verify(token, 'secretkey');
 
   db.all("SELECT * FROM time_entries", (err, rows) => {
     if (err) {
@@ -349,6 +346,7 @@ app.get('/api/getEmployee', async (req, res) => {
           } else {
               // Devuelve la información del empleado obtenida de Odoo
               res.json(result);
+              console.log(result)
               saveEmployee(result);
           }
       } else {
@@ -392,7 +390,6 @@ app.get('/api/proyectos', async (req, res) => {
 
           // Realiza la llamada al método JSON-RPC de Odoo
           const response = await axios.post(ODOO_URL, requestData);
-          console.log(response.data)
           const { result, error } = response.data;
 
           if (error) {
@@ -516,7 +513,7 @@ app.get('/api/taskProject', async (req, res) => {
         if (error) {
             // Manejo de error al obtener proyectos de Odoo
             console.error('Error al obtener proyectos de Odoo:', error);
-            getLocalProjects((err, projects) => {
+            getLocalTasks((err, projects) => {
                 if (err) {
                     res.status(500).json({ error: 'Error interno del servidor' });
                 } else {
@@ -526,7 +523,7 @@ app.get('/api/taskProject', async (req, res) => {
         } else {
             // Devuelve los proyectos obtenidos de Odoo
             res.json(result);
-            saveProjects(result);
+            saveTasks(result);
         }
     } else {
         // Si el token no es válido, devuelve un error de autenticación
@@ -599,57 +596,6 @@ app.get('/api/userTasks', async (req, res) => {
 }
 });
 
-// Ruta para obtener las tareas de cada proyecto
-app.get('/api/taskProject/:projectId', async (req, res) => {
-  const projectId = parseInt(req.params.projectId);
-  try {
-    // Verifica si el usuario está autenticado mediante el token JWT
-    const token = req.headers.authorization.split(' ')[1]; // Obtén el token del encabezado Authorization
-    const decodedToken = jwt.verify(token, 'secretkey');
-
-    // Si el token es válido, realiza la llamada a la API XML-RPC de Odoo para obtener las tareas de cada proyecto
-    if (decodedToken) {
-      const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
-
-      // Parámetros para la llamada al método 'search_read' de la API de Odoo para obtener las tareas de cada proyecto
-      const params = [
-        decodedToken.database, // Nombre de la base de datos
-        userId, // ID del usuario
-        decodedToken.password, // Contraseña del usuario
-        'project.task', // Nombre del modelo de Odoo que contiene las tareas
-        'search_read', // Método de la API de Odoo para buscar y leer registros
-        [['project_id', '=', projectId]], // Lista de condiciones de búsqueda (vacía para obtener todos los registros)
-        { fields: ['name', 'project_id', 'user_ids', 'date_deadline', 'stage_id'] } // Campos a devolver para cada tarea
-      ];
-
-      // Realiza la llamada al método XML-RPC de Odoo
-      client.methodCall('execute_kw', params, (error, value) => {
-        if (error) {
-          getLocalTasks((err, tasks) => {
-            if (err) {
-              res.status(500).json({ error: 'Error interno del servidor' });
-            } else {
-              const filteredTasks = tasks.filter(task => task.project_id === projectId);
-              res.json(filteredTasks);  // Devolver tareas locales
-            }
-          });
-        } else {
-          // Devuelve las tareas obtenidas de Odoo
-          res.json(value);
-          saveTasks(value);
-        }
-      });
-    } else {
-      // Si el token no es válido, devuelve un error de autenticación
-      res.status(401).json({ error: 'Token JWT inválido' });
-    }
-  } catch (error) {
-    // Error al decodificar el token JWT
-    console.error('Error al decodificar el token JWT:', error);
-    res.status(401).json({ error: 'Token JWT inválido' });
-  }
-});
-
 // Ruta para obtener las hojas de tiempo (timesheets) del usuario autenticado
  app.get('/api/timesheets', async (req, res) => {
 
@@ -697,9 +643,19 @@ app.get('/api/taskProject/:projectId', async (req, res) => {
                 }
             });
         } else {
-            // Devuelve los timesheets obtenidos de Odoo
-            res.json(result);
-            saveTimeEntries(result);
+            if (result.length === 0) {  // Suponiendo que result es un array o una lista
+              getTimeEntries((err, timesheet) => {
+                  if (err) {
+                      res.status(500).json({ error: 'Error interno del servidor' });
+                  } else {
+                      res.json(timesheet); // Devolver timesheets locales
+                  }
+              });
+          } else {
+              // Devuelve los timesheets obtenidos de Odoo
+              res.json(result);
+              saveTimeEntries(result);
+          }
         }
     } else {
         // Si el token no es válido, devuelve un error de autenticación
@@ -733,7 +689,6 @@ app.post('/api/startTask', async (req, res) => {
           return res.status(500).json({ error: 'Error interno del servidor' });
         }
         res.json({ id: this.lastID });
-        //console.log("START",res.json({ id: this.lastID }))
       });
     };
 
@@ -795,57 +750,57 @@ function formatElapsedTime(elapsedTime) {
 
 
 
-syncFromOdoo();
+//syncFromOdoo();
 
-const syncToOdoo = () => {
-  db.all(`SELECT * FROM time_entries WHERE date_time_end IS NOT NULL`, [], (err, rows) => {
-    if (err) {
-      return console.error('Error al obtener datos de la base de datos local:', err);
-    }
+// const syncToOdoo = () => {
+//   db.all(`SELECT * FROM time_entries WHERE date_time_end IS NOT NULL`, [], (err, rows) => {
+//     if (err) {
+//       return console.error('Error al obtener datos de la base de datos local:', err);
+//     }
 
-    const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
-    const token = req.headers.authorization.split(' ')[1];
-    const decodedToken = jwt.verify(token, 'secretkey');
+//     const client = xmlrpc.createClient({ host: 'https://sdvfran.smallsolutions.es', port: 8069, path: '/xmlrpc/2/object' });
+//     const token = req.headers.authorization.split(' ')[1];
+//     const decodedToken = jwt.verify(token, 'secretkey');
 
-    rows.forEach(row => {
-      const params = [
-        decodedToken.database,
-        decodedToken.userId,
-        decodedToken.password,
-        'account.analytic.line', 
-        'create',
-        {
-          name: row.name,
-          date_time: row.date_time,
-          date_time_end: row.date_time_end,
-          unit_amount: (new Date(row.date_time_end) - new Date(row.date_time)) / 3600000, // convertir ms a horas
-          account_id: row.account_id,
-          task_id: row.task_id,
-          user_id: row.user_id
-        }
-      ];
+//     rows.forEach(row => {
+//       const params = [
+//         decodedToken.database,
+//         decodedToken.userId,
+//         decodedToken.password,
+//         'account.analytic.line', 
+//         'create',
+//         {
+//           name: row.name,
+//           date_time: row.date_time,
+//           date_time_end: row.date_time_end,
+//           unit_amount: (new Date(row.date_time_end) - new Date(row.date_time)) / 3600000, // convertir ms a horas
+//           account_id: row.account_id,
+//           task_id: row.task_id,
+//           user_id: row.user_id
+//         }
+//       ];
 
-      client.methodCall('execute_kw', params, (error, value) => {
-        if (error) {
-          console.error('Error al subir datos a Odoo:', error);
-        } else {
-          db.run(`DELETE FROM time_entries WHERE id = ?`, [row.id], (err) => {
-            if (err) {
-              console.error('Error al eliminar datos locales:', err);
-            }
-          });
-        }
-      });
-    });
-  });
-};
+//       client.methodCall('execute_kw', params, (error, value) => {
+//         if (error) {
+//           console.error('Error al subir datos a Odoo:', error);
+//         } else {
+//           db.run(`DELETE FROM time_entries WHERE id = ?`, [row.id], (err) => {
+//             if (err) {
+//               console.error('Error al eliminar datos locales:', err);
+//             }
+//           });
+//         }
+//       });
+//     });
+//   });
+// };
 
 // Escuchar el evento de cierre de la aplicación
-process.on('exit', syncToOdoo);
-process.on('SIGINT', () => {
-  syncToOdoo();
-  process.exit();
-});
+// process.on('exit', syncToOdoo);
+// process.on('SIGINT', () => {
+//   syncToOdoo();
+//   process.exit();
+// });
 
 
 // Manejador de errores
